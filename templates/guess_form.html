@@ -21,6 +21,7 @@
             </div>
         {% endif %}
         
+        {% if config.show_dob or config.show_sex or config.show_first_name or config.show_height or config.show_weight %}
         <div class="form-section">
             <h3>Les Essentiels</h3>
             {% if config.show_dob %}
@@ -74,7 +75,9 @@
             </div>
             {% endif %}
         </div>
+        {% endif %}
 
+        {% if config.show_skin_color or config.show_eye_color or config.show_hair_color %}
         <div class="form-section">
             <h3>Plus tard... (Optionnel)</h3>
             <p class="section-desc">Comment imaginez-vous le bébé en grandissant ?</p>
@@ -97,6 +100,7 @@
             </div>
             {% endif %}
         </div>
+        {% endif %}
 
         <div class="form-group submit-group full-width">
             {{ form.submit(class="btn-primary full-width large-btn") }}

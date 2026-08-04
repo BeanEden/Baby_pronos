@@ -96,14 +96,14 @@
         <thead>
             <tr>
                 <th>Participant</th>
-                <th>Date prévue</th>
-                <th>Sexe</th>
-                <th>Prénom</th>
-                <th>Taille (cm)</th>
-                <th>Poids (kg)</th>
-                <th>Peau</th>
-                <th>Yeux</th>
-                <th>Cheveux</th>
+                {% if config.show_dob %}<th>Date prévue</th>{% endif %}
+                {% if config.show_sex %}<th>Sexe</th>{% endif %}
+                {% if config.show_first_name %}<th>Prénom</th>{% endif %}
+                {% if config.show_height %}<th>Taille (cm)</th>{% endif %}
+                {% if config.show_weight %}<th>Poids (kg)</th>{% endif %}
+                {% if config.show_skin_color %}<th>Peau</th>{% endif %}
+                {% if config.show_eye_color %}<th>Yeux</th>{% endif %}
+                {% if config.show_hair_color %}<th>Cheveux</th>{% endif %}
                 <th>Action</th>
             </tr>
         </thead>
@@ -116,14 +116,14 @@
                         <span class="badge" style="margin-left: 5px;">Moi</span>
                     {% endif %}
                 </td>
-                <td>{{ guess.dob.strftime('%Y/%m/%d') }}</td>
-                <td>{{ guess.sex }}</td>
-                <td>{{ guess.first_name }}</td>
-                <td>{{ guess.height }}</td>
-                <td>{{ guess.weight }}</td>
-                <td>{{ guess.skin_color or '-' }}</td>
-                <td>{{ guess.eye_color or '-' }}</td>
-                <td>{{ guess.hair_color or '-' }}</td>
+                {% if config.show_dob %}<td>{{ guess.dob.strftime('%Y/%m/%d') if guess.dob else '-' }}</td>{% endif %}
+                {% if config.show_sex %}<td>{{ guess.sex or '-' }}</td>{% endif %}
+                {% if config.show_first_name %}<td>{{ guess.first_name or '-' }}</td>{% endif %}
+                {% if config.show_height %}<td>{{ guess.height or '-' }}</td>{% endif %}
+                {% if config.show_weight %}<td>{{ guess.weight or '-' }}</td>{% endif %}
+                {% if config.show_skin_color %}<td>{{ guess.skin_color or '-' }}</td>{% endif %}
+                {% if config.show_eye_color %}<td>{{ guess.eye_color or '-' }}</td>{% endif %}
+                {% if config.show_hair_color %}<td>{{ guess.hair_color or '-' }}</td>{% endif %}
                 <td>
                     {% if current_user.is_authenticated and guess.user_id == current_user.id %}
                         <a href="{{ url_for('guess') }}" class="action-icon" title="Modifier mon pronostic">✏️</a>

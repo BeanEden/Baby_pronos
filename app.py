@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, DateField, SelectField, FloatField, TextAreaField
+from wtforms import StringField, PasswordField, SubmitField, DateField, SelectField, FloatField, TextAreaField, BooleanField
 from wtforms.validators import DataRequired, EqualTo, Optional
 
 app = Flask(__name__)
@@ -48,6 +48,18 @@ class Guess(db.Model):
     eye_color = db.Column(db.String(100), nullable=True)
     hair_color = db.Column(db.String(100), nullable=True)
 
+class FormConfig(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    show_dob = db.Column(db.Boolean, default=True)
+    show_sex = db.Column(db.Boolean, default=True)
+    show_first_name = db.Column(db.Boolean, default=True)
+    show_height = db.Column(db.Boolean, default=True)
+    show_weight = db.Column(db.Boolean, default=True)
+    show_skin_color = db.Column(db.Boolean, default=True)
+    show_eye_color = db.Column(db.Boolean, default=True)
+    show_hair_color = db.Column(db.Boolean, default=True)
+    show_hints = db.Column(db.Boolean, default=True)
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -65,11 +77,11 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Se connecter')
 
 class GuessForm(FlaskForm):
-    dob = DateField('Date de naissance (estimée)', format='%Y-%m-%d', validators=[DataRequired()])
-    sex = SelectField('Sexe', choices=[('Fille', 'Fille'), ('Garçon', 'Garçon'), ('Surprise', 'Surprise')], validators=[DataRequired()])
-    first_name = StringField('Prénom', validators=[DataRequired()])
-    height = FloatField('Taille (cm)', validators=[DataRequired()])
-    weight = FloatField('Poids (kg)', validators=[DataRequired()])
+    dob = DateField('Date de naissance (estimée)', format='%Y-%m-%d', validators=[Optional()])
+    sex = SelectField('Sexe', choices=[('Fille', 'Fille'), ('Garçon', 'Garçon'), ('Surprise', 'Surprise')], validators=[Optional()])
+    first_name = StringField('Prénom', validators=[Optional()])
+    height = FloatField('Taille (cm)', validators=[Optional()])
+    weight = FloatField('Poids (kg)', validators=[Optional()])
     skin_color = SelectField('Couleur de peau (optionnel)', choices=[('', '---'), ('Blanche', 'Blanche'), ('Mate', 'Mate'), ('Noire', 'Noire'), ('Métissée', 'Métissée'), ('Autre', 'Autre')], validators=[Optional()])
     eye_color = SelectField('Couleur des yeux (optionnel)', choices=[('', '---'), ('Marrons', 'Marrons'), ('Bleus', 'Bleus'), ('Verts', 'Verts'), ('Noisette', 'Noisette'), ('Gris', 'Gris'), ('Autre', 'Autre')], validators=[Optional()])
     hair_color = SelectField('Couleur des cheveux (optionnel)', choices=[('', '---'), ('Bruns', 'Bruns'), ('Châtains', 'Châtains'), ('Blonds', 'Blonds'), ('Roux', 'Roux'), ('Noirs', 'Noirs'), ('Chauve', 'Chauve (sans cheveux)'), ('Autre', 'Autre')], validators=[Optional()])
@@ -87,11 +99,26 @@ class DueDateForm(FlaskForm):
     sex = SelectField('Sexe du bébé', choices=[('', '---'), ('Fille', 'Fille'), ('Garçon', 'Garçon')], validators=[Optional()])
     submit_date = SubmitField('Mettre à jour les informations')
 
+class FormConfigForm(FlaskForm):
+    show_dob = BooleanField('Date de naissance')
+    show_sex = BooleanField('Sexe')
+    show_first_name = BooleanField('Prénom')
+    show_height = BooleanField('Taille')
+    show_weight = BooleanField('Poids')
+    show_skin_color = BooleanField('Couleur de peau')
+    show_eye_color = BooleanField('Couleur des yeux')
+    show_hair_color = BooleanField('Couleur des cheveux')
+    show_hints = BooleanField('Afficher les indices')
+    submit_config = SubmitField('Enregistrer la configuration')
+
 # Routes
 @app.route('/')
 def index():
     guesses = Guess.query.all()
-    return render_template('index.html', guesses=guesses)
+    form_config = FormConfig.query.first()
+    if not form_config:
+        form_config = FormConfig()
+    return render_template('index.html', guesses=guesses, config=form_config)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -161,9 +188,16 @@ def admin_info():
         baby_info = BabyInfo()
         db.session.add(baby_info)
         db.session.commit()
+        
+    form_config = FormConfig.query.first()
+    if not form_config:
+        form_config = FormConfig()
+        db.session.add(form_config)
+        db.session.commit()
 
     clue_form = ClueForm()
     date_form = DueDateForm()
+    config_form = FormConfigForm()
     
     if clue_form.submit_clue.data and clue_form.validate_on_submit():
         new_clue = Clue(
@@ -183,13 +217,37 @@ def admin_info():
         db.session.commit()
         flash('Les informations ont été mises à jour.', 'success')
         return redirect(url_for('admin_info'))
+        
+    if config_form.submit_config.data and config_form.validate_on_submit():
+        form_config.show_dob = config_form.show_dob.data
+        form_config.show_sex = config_form.show_sex.data
+        form_config.show_first_name = config_form.show_first_name.data
+        form_config.show_height = config_form.show_height.data
+        form_config.show_weight = config_form.show_weight.data
+        form_config.show_skin_color = config_form.show_skin_color.data
+        form_config.show_eye_color = config_form.show_eye_color.data
+        form_config.show_hair_color = config_form.show_hair_color.data
+        form_config.show_hints = config_form.show_hints.data
+        db.session.commit()
+        flash('Configuration du formulaire mise à jour.', 'success')
+        return redirect(url_for('admin_info'))
 
-    # Populate date_form
+    # Populate forms
     if request.method == 'GET':
         date_form.due_date.data = baby_info.due_date
         date_form.sex.data = baby_info.sex
         
-    return render_template('admin_info.html', form=clue_form, date_form=date_form, clues=clues, themes=themes)
+        config_form.show_dob.data = form_config.show_dob
+        config_form.show_sex.data = form_config.show_sex
+        config_form.show_first_name.data = form_config.show_first_name
+        config_form.show_height.data = form_config.show_height
+        config_form.show_weight.data = form_config.show_weight
+        config_form.show_skin_color.data = form_config.show_skin_color
+        config_form.show_eye_color.data = form_config.show_eye_color
+        config_form.show_hair_color.data = form_config.show_hair_color
+        config_form.show_hints.data = form_config.show_hints
+        
+    return render_template('admin_info.html', form=clue_form, date_form=date_form, config_form=config_form, clues=clues, themes=themes)
 
 @app.route('/admin/info/delete/<int:clue_id>', methods=['POST'])
 @login_required
@@ -252,11 +310,14 @@ def guess():
         form.eye_color.data = existing_guess.eye_color
         form.hair_color.data = existing_guess.hair_color
         
-    # Get hints
+    # Get hints & config
     baby_info = BabyInfo.query.first()
     prenom_clues = Clue.query.filter_by(theme='Prénom').all()
+    form_config = FormConfig.query.first()
+    if not form_config:
+        form_config = FormConfig()
         
-    return render_template('guess_form.html', form=form, existing=bool(existing_guess), baby_info=baby_info, prenom_clues=prenom_clues)
+    return render_template('guess_form.html', form=form, existing=bool(existing_guess), baby_info=baby_info, prenom_clues=prenom_clues, config=form_config)
 
 if __name__ == '__main__':
     with app.app_context():

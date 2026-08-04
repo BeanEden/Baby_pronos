@@ -23,29 +23,34 @@
         
         <div class="form-section">
             <h3>Les Essentiels</h3>
+            {% if config.show_dob %}
             <div class="form-group">
                 {{ form.dob.label }}
                 <div style="display: flex; gap: 10px; align-items: center;">
                     {{ form.dob(class="form-control", type="date") }}
-                    {% if baby_info and baby_info.due_date %}
+                    {% if config.show_hints and baby_info and baby_info.due_date %}
                     <span style="font-size: 0.85rem; color: var(--primary-color); white-space: nowrap; font-weight: 600;">(Terme : {{ baby_info.due_date.strftime('%d/%m/%Y') }})</span>
                     {% endif %}
                 </div>
             </div>
+            {% endif %}
+            {% if config.show_sex %}
             <div class="form-group">
                 {{ form.sex.label }}
                 <div style="display: flex; gap: 10px; align-items: center;">
                     {{ form.sex(class="form-control") }}
-                    {% if baby_info and baby_info.sex %}
+                    {% if config.show_hints and baby_info and baby_info.sex %}
                     <span style="font-size: 0.85rem; color: var(--primary-color); white-space: nowrap; font-weight: 600;">(Indice : {{ baby_info.sex }})</span>
                     {% endif %}
                 </div>
             </div>
+            {% endif %}
+            {% if config.show_first_name %}
             <div class="form-group">
                 {{ form.first_name.label }}
                 <div style="display: flex; gap: 10px; align-items: center;">
                     {{ form.first_name(class="form-control", placeholder="Ex: Lucas, Emma...") }}
-                    {% if prenom_clues %}
+                    {% if config.show_hints and prenom_clues %}
                     <select class="form-control" style="width: auto; max-width: 150px; font-size: 0.85rem;" onchange="if(this.value) document.getElementById('{{ form.first_name.id }}').value = this.value">
                         <option value="">-- Indices --</option>
                         {% for clue in prenom_clues %}
@@ -55,31 +60,42 @@
                     {% endif %}
                 </div>
             </div>
+            {% endif %}
+            {% if config.show_height %}
             <div class="form-group">
                 {{ form.height.label }}
                 {{ form.height(class="form-control", placeholder="Ex: 50.5", step="0.1") }}
             </div>
+            {% endif %}
+            {% if config.show_weight %}
             <div class="form-group">
                 {{ form.weight.label }}
                 {{ form.weight(class="form-control", placeholder="Ex: 3.2", step="0.1") }}
             </div>
+            {% endif %}
         </div>
 
         <div class="form-section">
             <h3>Plus tard... (Optionnel)</h3>
             <p class="section-desc">Comment imaginez-vous le bébé en grandissant ?</p>
+            {% if config.show_skin_color %}
             <div class="form-group">
                 {{ form.skin_color.label }}
                 {{ form.skin_color(class="form-control") }}
             </div>
+            {% endif %}
+            {% if config.show_eye_color %}
             <div class="form-group">
                 {{ form.eye_color.label }}
                 {{ form.eye_color(class="form-control") }}
             </div>
+            {% endif %}
+            {% if config.show_hair_color %}
             <div class="form-group">
                 {{ form.hair_color.label }}
                 {{ form.hair_color(class="form-control") }}
             </div>
+            {% endif %}
         </div>
 
         <div class="form-group submit-group full-width">

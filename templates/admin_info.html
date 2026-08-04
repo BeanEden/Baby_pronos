@@ -30,6 +30,51 @@
     </form>
 
     <hr style="border: 0; height: 1px; background: rgba(0,0,0,0.1); margin-bottom: 2rem;">
+
+    <h3>Configuration du Formulaire "Mon Pronostic"</h3>
+    <form method="POST" action="" class="custom-form" style="margin-bottom: 2rem; background: rgba(255,255,255,0.4); padding: 1.5rem; border-radius: 12px;">
+        {{ config_form.hidden_tag() }}
+        <p class="form-subtitle" style="text-align: left; margin-bottom: 1rem;">Cochez les champs que vous souhaitez afficher dans le formulaire :</p>
+        <div class="two-columns">
+            <div class="form-section">
+                <div class="form-group" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px;">
+                    {{ config_form.show_dob() }} {{ config_form.show_dob.label }}
+                </div>
+                <div class="form-group" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px;">
+                    {{ config_form.show_sex() }} {{ config_form.show_sex.label }}
+                </div>
+                <div class="form-group" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px;">
+                    {{ config_form.show_first_name() }} {{ config_form.show_first_name.label }}
+                </div>
+                <div class="form-group" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px;">
+                    {{ config_form.show_height() }} {{ config_form.show_height.label }}
+                </div>
+                <div class="form-group" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px;">
+                    {{ config_form.show_weight() }} {{ config_form.show_weight.label }}
+                </div>
+            </div>
+            <div class="form-section">
+                <div class="form-group" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px;">
+                    {{ config_form.show_skin_color() }} {{ config_form.show_skin_color.label }}
+                </div>
+                <div class="form-group" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px;">
+                    {{ config_form.show_eye_color() }} {{ config_form.show_eye_color.label }}
+                </div>
+                <div class="form-group" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px;">
+                    {{ config_form.show_hair_color() }} {{ config_form.show_hair_color.label }}
+                </div>
+                <hr style="margin: 1rem 0; border: 0; height: 1px; background: rgba(0,0,0,0.1);">
+                <div class="form-group" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px; font-weight: bold; color: var(--primary-color);">
+                    {{ config_form.show_hints() }} {{ config_form.show_hints.label }}
+                </div>
+            </div>
+        </div>
+        <div class="form-group submit-group full-width" style="margin-top: 1rem;">
+            {{ config_form.submit_config(class="btn-primary full-width large-btn", style="padding: 0.8rem;") }}
+        </div>
+    </form>
+
+    <hr style="border: 0; height: 1px; background: rgba(0,0,0,0.1); margin-bottom: 2rem;">
     
     <div style="margin-bottom: 3rem;">
         <h3>Indices existants</h3>

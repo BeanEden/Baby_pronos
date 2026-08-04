@@ -1,8 +1,8 @@
 :root {
-    --primary-color: #ff9a9e; /* Soft pink */
-    --secondary-color: #fecfef;
-    --accent-color: #a1c4fd; /* Soft blue */
-    --accent-secondary: #c2e9fb;
+    --primary-color: #89CFF0; /* Baby blue */
+    --secondary-color: #a1c4fd; /* Soft blue */
+    --accent-color: #f6d365; /* Soft yellow */
+    --accent-secondary: #ffdea8; /* Soft warm */
     --text-main: #2d3436;
     --text-muted: #636e72;
     --bg-color: #fdfbfb;

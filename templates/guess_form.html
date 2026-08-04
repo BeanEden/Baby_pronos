@@ -39,7 +39,11 @@
             <div class="form-group">
                 {{ form.sex.label }}
                 <div style="display: flex; gap: 10px; align-items: center;">
-                    {{ form.sex(class="form-control") }}
+                    {% if config.lock_sex and baby_info and baby_info.sex %}
+                        {{ form.sex(class="form-control", disabled=True, style="background-color: #f0f0f0; cursor: not-allowed;") }}
+                    {% else %}
+                        {{ form.sex(class="form-control") }}
+                    {% endif %}
                     {% if config.show_hints and baby_info and baby_info.sex %}
                     <span style="font-size: 0.85rem; color: var(--primary-color); white-space: nowrap; font-weight: 600;">(Indice : {{ baby_info.sex }})</span>
                     {% endif %}

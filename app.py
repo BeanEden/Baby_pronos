@@ -59,6 +59,7 @@ class FormConfig(db.Model):
     show_eye_color = db.Column(db.Boolean, default=True)
     show_hair_color = db.Column(db.Boolean, default=True)
     show_hints = db.Column(db.Boolean, default=True)
+    lock_sex = db.Column(db.Boolean, default=False)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -109,6 +110,7 @@ class FormConfigForm(FlaskForm):
     show_eye_color = BooleanField('Couleur des yeux')
     show_hair_color = BooleanField('Couleur des cheveux')
     show_hints = BooleanField('Afficher les indices')
+    lock_sex = BooleanField('Bloquer le Sexe (force la valeur définie en haut)')
     submit_config = SubmitField('Enregistrer la configuration')
 
 # Routes
@@ -228,6 +230,7 @@ def admin_info():
         form_config.show_eye_color = config_form.show_eye_color.data
         form_config.show_hair_color = config_form.show_hair_color.data
         form_config.show_hints = config_form.show_hints.data
+        form_config.lock_sex = config_form.lock_sex.data
         db.session.commit()
         flash('Configuration du formulaire mise à jour.', 'success')
         return redirect(url_for('admin_info'))
@@ -246,6 +249,7 @@ def admin_info():
         config_form.show_eye_color.data = form_config.show_eye_color
         config_form.show_hair_color.data = form_config.show_hair_color
         config_form.show_hints.data = form_config.show_hints
+        config_form.lock_sex.data = form_config.lock_sex
         
     return render_template('admin_info.html', form=clue_form, date_form=date_form, config_form=config_form, clues=clues, themes=themes)
 
@@ -268,11 +272,21 @@ def guess():
     form = GuessForm()
     existing_guess = Guess.query.filter_by(user_id=current_user.id).first()
     
+    # Get hints & config
+    baby_info = BabyInfo.query.first()
+    prenom_clues = Clue.query.filter_by(theme='Prénom').all()
+    form_config = FormConfig.query.first()
+    if not form_config:
+        form_config = FormConfig()
+    
     if form.validate_on_submit():
+        # Force sex if locked
+        final_sex = baby_info.sex if (form_config.lock_sex and baby_info and baby_info.sex) else form.sex.data
+        
         if existing_guess:
             # Update existing
             existing_guess.dob = form.dob.data
-            existing_guess.sex = form.sex.data
+            existing_guess.sex = final_sex
             existing_guess.first_name = form.first_name.data
             existing_guess.height = form.height.data
             existing_guess.weight = form.weight.data
@@ -285,7 +299,7 @@ def guess():
             new_guess = Guess(
                 user_id=current_user.id,
                 dob=form.dob.data,
-                sex=form.sex.data,
+                sex=final_sex,
                 first_name=form.first_name.data,
                 height=form.height.data,
                 weight=form.weight.data,
@@ -310,12 +324,9 @@ def guess():
         form.eye_color.data = existing_guess.eye_color
         form.hair_color.data = existing_guess.hair_color
         
-    # Get hints & config
-    baby_info = BabyInfo.query.first()
-    prenom_clues = Clue.query.filter_by(theme='Prénom').all()
-    form_config = FormConfig.query.first()
-    if not form_config:
-        form_config = FormConfig()
+    # Pre-fill sex if locked (even for existing guesses, we overwrite their view)
+    if form_config.lock_sex and baby_info and baby_info.sex:
+        form.sex.data = baby_info.sex
         
     return render_template('guess_form.html', form=form, existing=bool(existing_guess), baby_info=baby_info, prenom_clues=prenom_clues, config=form_config)
 

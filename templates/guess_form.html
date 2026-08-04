@@ -25,15 +25,35 @@
             <h3>Les Essentiels</h3>
             <div class="form-group">
                 {{ form.dob.label }}
-                {{ form.dob(class="form-control", type="date") }}
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    {{ form.dob(class="form-control", type="date") }}
+                    {% if baby_info and baby_info.due_date %}
+                    <span style="font-size: 0.85rem; color: var(--primary-color); white-space: nowrap; font-weight: 600;">(Terme : {{ baby_info.due_date.strftime('%d/%m/%Y') }})</span>
+                    {% endif %}
+                </div>
             </div>
             <div class="form-group">
                 {{ form.sex.label }}
-                {{ form.sex(class="form-control") }}
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    {{ form.sex(class="form-control") }}
+                    {% if baby_info and baby_info.sex %}
+                    <span style="font-size: 0.85rem; color: var(--primary-color); white-space: nowrap; font-weight: 600;">(Indice : {{ baby_info.sex }})</span>
+                    {% endif %}
+                </div>
             </div>
             <div class="form-group">
                 {{ form.first_name.label }}
-                {{ form.first_name(class="form-control", placeholder="Ex: Lucas, Emma...") }}
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    {{ form.first_name(class="form-control", placeholder="Ex: Lucas, Emma...") }}
+                    {% if prenom_clues %}
+                    <select class="form-control" style="width: auto; max-width: 150px; font-size: 0.85rem;" onchange="if(this.value) document.getElementById('{{ form.first_name.id }}').value = this.value">
+                        <option value="">-- Indices --</option>
+                        {% for clue in prenom_clues %}
+                        <option value="{{ clue.value }}">{{ clue.value }}</option>
+                        {% endfor %}
+                    </select>
+                    {% endif %}
+                </div>
             </div>
             <div class="form-group">
                 {{ form.height.label }}

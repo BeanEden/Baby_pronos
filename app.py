@@ -27,6 +27,7 @@ class User(UserMixin, db.Model):
 class BabyInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     due_date = db.Column(db.Date, nullable=True)
+    sex = db.Column(db.String(50), nullable=True)
 
 class Clue(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -83,7 +84,8 @@ class ClueForm(FlaskForm):
 
 class DueDateForm(FlaskForm):
     due_date = DateField('Terme prévu', format='%Y-%m-%d', validators=[Optional()])
-    submit_date = SubmitField('Mettre à jour le terme')
+    sex = SelectField('Sexe du bébé', choices=[('', '---'), ('Fille', 'Fille'), ('Garçon', 'Garçon')], validators=[Optional()])
+    submit_date = SubmitField('Mettre à jour les informations')
 
 # Routes
 @app.route('/')
@@ -177,13 +179,15 @@ def admin_info():
         
     if date_form.submit_date.data and date_form.validate_on_submit():
         baby_info.due_date = date_form.due_date.data
+        baby_info.sex = date_form.sex.data
         db.session.commit()
-        flash('Le terme prévu a été mis à jour.', 'success')
+        flash('Les informations ont été mises à jour.', 'success')
         return redirect(url_for('admin_info'))
 
     # Populate date_form
     if request.method == 'GET':
         date_form.due_date.data = baby_info.due_date
+        date_form.sex.data = baby_info.sex
         
     return render_template('admin_info.html', form=clue_form, date_form=date_form, clues=clues, themes=themes)
 
@@ -248,7 +252,11 @@ def guess():
         form.eye_color.data = existing_guess.eye_color
         form.hair_color.data = existing_guess.hair_color
         
-    return render_template('guess_form.html', form=form, existing=bool(existing_guess))
+    # Get hints
+    baby_info = BabyInfo.query.first()
+    prenom_clues = Clue.query.filter_by(theme='Prénom').all()
+        
+    return render_template('guess_form.html', form=form, existing=bool(existing_guess), baby_info=baby_info, prenom_clues=prenom_clues)
 
 if __name__ == '__main__':
     with app.app_context():

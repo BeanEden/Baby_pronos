@@ -9,9 +9,19 @@
     <form method="POST" action="" class="custom-form" style="margin-bottom: 2rem; background: rgba(255,255,255,0.4); padding: 1.5rem; border-radius: 12px;">
         {{ date_form.hidden_tag() }}
         
-        <div class="form-group">
-            {{ date_form.due_date.label }}
-            {{ date_form.due_date(class="form-control", type="date") }}
+        <div class="two-columns" style="margin-bottom: 1.5rem;">
+            <div class="form-section">
+                <div class="form-group" style="margin-bottom: 0;">
+                    {{ date_form.due_date.label }}
+                    {{ date_form.due_date(class="form-control", type="date") }}
+                </div>
+            </div>
+            <div class="form-section">
+                <div class="form-group" style="margin-bottom: 0;">
+                    {{ date_form.sex.label }}
+                    {{ date_form.sex(class="form-control") }}
+                </div>
+            </div>
         </div>
         
         <div class="form-group submit-group full-width">

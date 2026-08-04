@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="header-section">
+    <h1>Indices et Informations</h1>
+    <p>Besoin d'aide pour vous décider ? Voici quelques informations utiles basées sur la génétique et la famille.</p>
+</div>
+
+<div class="form-container">
+    {% if baby_info.due_date %}
+        <div class="info-section" style="margin-bottom: 2rem; text-align: center; background: rgba(255, 154, 158, 0.1); padding: 1.5rem; border-radius: 12px; border: 2px dashed var(--primary-color);">
+            <h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 0.5rem;">📅 Terme prévu</h3>
+            <p style="font-size: 1.4rem; font-weight: 700; margin: 0; color: var(--text-main);">{{ baby_info.due_date.strftime('%d/%m/%Y') }}</p>
+        </div>
+    {% endif %}
+
+    {% if clues_by_theme %}
+        {% for theme, clues in clues_by_theme.items() %}
+        <div class="info-section" style="margin-bottom: 2rem;">
+            <h3 style="color: var(--primary-color); border-bottom: 2px solid var(--accent-secondary); padding-bottom: 0.5rem; display: inline-block;">{{ theme }}</h3>
+            <div style="background: rgba(255,255,255,0.5); padding: 1.5rem; border-radius: 12px; margin-top: 1rem;">
+                <ul style="list-style-type: none; padding: 0; margin: 0;">
+                    {% for clue in clues %}
+                    <li style="margin-bottom: 0.8rem; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 0.8rem;">
+                        <strong style="font-size: 1.1rem; color: var(--text-main);">{{ clue.value }}</strong>
+                        {% if clue.relation_link or clue.relative_name %}
+                            <span style="color: var(--text-muted); font-size: 0.9rem; margin-left: 10px;">
+                                (Côté <strong>{{ clue.relation_link or 'inconnu' }}</strong>{% if clue.relative_name %} - <em>{{ clue.relative_name }}</em>{% endif %})
+                            </span>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <p>Les parents n'ont pas encore ajouté d'indices. Revenez plus tard !</p>
+        </div>
+    {% endif %}
+
+    <div style="text-align: center; margin-top: 3rem;">
+        <a href="{{ url_for('guess') }}" class="btn-primary large-btn">Je suis prêt(e) à faire mon pronostic !</a>
+    </div>
+</div>
+{% endblock %}

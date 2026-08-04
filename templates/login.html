@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="auth-container">
+    <h2>Connexion</h2>
+    <form method="POST" action="" class="custom-form">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.username.label }}
+            {{ form.username(class="form-control", placeholder="Entrez votre nom d'utilisateur") }}
+        </div>
+        <div class="form-group">
+            {{ form.password.label }}
+            {{ form.password(class="form-control", placeholder="Entrez votre mot de passe") }}
+        </div>
+        <div class="form-group submit-group">
+            {{ form.submit(class="btn-primary full-width") }}
+        </div>
+    </form>
+    <div class="auth-links">
+        <p>Pas encore inscrit ? <a href="{{ url_for('register') }}">Créer un compte</a></p>
+    </div>
+</div>
+{% endblock %}

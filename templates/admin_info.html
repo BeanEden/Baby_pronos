@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="form-container" style="max-width: 900px;">
+    <h2>Administration : Gérer les indices</h2>
+    <p class="form-subtitle">Ces informations seront visibles par tous les participants pour les aider.</p>
+    
+    <h3>Informations générales</h3>
+    <form method="POST" action="" class="custom-form" style="margin-bottom: 2rem; background: rgba(255,255,255,0.4); padding: 1.5rem; border-radius: 12px;">
+        {{ date_form.hidden_tag() }}
+        
+        <div class="form-group">
+            {{ date_form.due_date.label }}
+            {{ date_form.due_date(class="form-control", type="date") }}
+        </div>
+        
+        <div class="form-group submit-group full-width">
+            {{ date_form.submit_date(class="btn-primary full-width large-btn", style="padding: 0.8rem;") }}
+        </div>
+    </form>
+
+    <hr style="border: 0; height: 1px; background: rgba(0,0,0,0.1); margin-bottom: 2rem;">
+    
+    <div style="margin-bottom: 3rem;">
+        <h3>Indices existants</h3>
+        {% if clues %}
+        <table class="display responsive nowrap" style="width:100%; border-collapse: collapse; text-align: left;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--accent-secondary);">
+                    <th style="padding: 10px;">Thème</th>
+                    <th style="padding: 10px;">Valeur</th>
+                    <th style="padding: 10px;">Lien</th>
+                    <th style="padding: 10px;">Parent associé</th>
+                    <th style="padding: 10px;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for clue in clues %}
+                <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                    <td style="padding: 10px; font-weight: 600;">{{ clue.theme }}</td>
+                    <td style="padding: 10px;">{{ clue.value }}</td>
+                    <td style="padding: 10px;">{{ clue.relation_link or '-' }}</td>
+                    <td style="padding: 10px;">{{ clue.relative_name or '-' }}</td>
+                    <td style="padding: 10px;">
+                        <form method="POST" action="{{ url_for('delete_clue', clue_id=clue.id) }}" style="display:inline;">
+                            <button type="submit" class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; background-color: #ff7675; color: white; border: none;">Supprimer</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="color: var(--text-muted); font-style: italic;">Aucun indice enregistré pour le moment.</p>
+        {% endif %}
+    </div>
+
+    <hr style="border: 0; height: 1px; background: rgba(0,0,0,0.1); margin-bottom: 2rem;">
+
+    <h3>Ajouter un nouvel indice</h3>
+    <form method="POST" action="" class="custom-form">
+        {{ form.hidden_tag() }}
+        
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                Veuillez corriger les erreurs ci-dessous.
+            </div>
+        {% endif %}
+
+        <div class="two-columns">
+            <div class="form-section">
+                <div class="form-group">
+                    {{ form.theme.label }}
+                    {{ form.theme(class="form-control", list="themes-list", autocomplete="off") }}
+                    <datalist id="themes-list">
+                        {% for t in themes %}
+                        <option value="{{ t }}"></option>
+                        {% endfor %}
+                    </datalist>
+                </div>
+                
+                <div class="form-group">
+                    {{ form.value.label }}
+                    {{ form.value(class="form-control", placeholder="Ex: Bleus, 50cm, Lucas...") }}
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-group">
+                    {{ form.relation_link.label }}
+                    {{ form.relation_link(class="form-control") }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.relative_name.label }}
+                    {{ form.relative_name(class="form-control", placeholder="Ex: Maman, Sœur du père...") }}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group submit-group full-width">
+            {{ form.submit_clue(class="btn-primary full-width large-btn") }}
+        </div>
+    </form>
+</div>
+{% endblock %}

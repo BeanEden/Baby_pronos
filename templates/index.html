@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<style>
+    /* Custom styles to match the glassmorphism theme */
+    .table-container {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        padding: 2rem;
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.05);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        margin-top: 2rem;
+    }
+    
+    table.dataTable {
+        font-family: 'Outfit', sans-serif;
+        border-collapse: collapse !important;
+        width: 100% !important;
+    }
+
+    table.dataTable thead th, table.dataTable thead td {
+        border-bottom: 2px solid var(--accent-secondary);
+        color: var(--primary-color);
+        padding: 1rem;
+    }
+    
+    table.dataTable tbody tr {
+        background-color: transparent !important;
+        transition: background-color 0.3s;
+    }
+
+    table.dataTable tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.5) !important;
+    }
+
+    table.dataTable tbody td {
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding: 1rem;
+    }
+    
+    .dataTables_wrapper .dataTables_filter input {
+        border: 2px solid #e1e1e1;
+        border-radius: 10px;
+        padding: 0.5rem;
+        font-family: 'Outfit', sans-serif;
+        background: rgba(255,255,255,0.9);
+    }
+
+    .dataTables_wrapper .dataTables_filter input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+    }
+    
+    .dataTables_wrapper .dataTables_length select {
+        border: 2px solid #e1e1e1;
+        border-radius: 8px;
+        padding: 0.3rem;
+        background: rgba(255,255,255,0.9);
+    }
+    
+    .my-guess-row {
+        background-color: rgba(255, 255, 255, 0.8) !important;
+        font-weight: 600;
+    }
+    
+    .action-icon {
+        text-decoration: none;
+        font-size: 1.2rem;
+        display: inline-block;
+        transition: transform 0.2s;
+    }
+    .action-icon:hover {
+        transform: scale(1.2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="header-section">
+    <h1>Tous les Pronostics</h1>
+    <p>Découvrez ce que les autres pensent ! Vous pouvez filtrer et trier le tableau.</p>
+</div>
+
+{% if not current_user.is_authenticated %}
+<div class="cta-section">
+    <p>Envie de participer ? <a href="{{ url_for('register') }}">Inscrivez-vous</a> ou <a href="{{ url_for('login') }}">connectez-vous</a> pour faire votre pronostic !</p>
+</div>
+{% endif %}
+
+<div class="table-container">
+    <table id="guessesTable" class="display responsive nowrap" style="width:100%">
+        <thead>
+            <tr>
+                <th>Participant</th>
+                <th>Date prévue</th>
+                <th>Sexe</th>
+                <th>Prénom</th>
+                <th>Taille (cm)</th>
+                <th>Poids (kg)</th>
+                <th>Peau</th>
+                <th>Yeux</th>
+                <th>Cheveux</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for guess in guesses %}
+            <tr class="{% if current_user.is_authenticated and guess.user_id == current_user.id %}my-guess-row{% endif %}">
+                <td>
+                    {{ guess.user.username }}
+                    {% if current_user.is_authenticated and guess.user_id == current_user.id %}
+                        <span class="badge" style="margin-left: 5px;">Moi</span>
+                    {% endif %}
+                </td>
+                <td>{{ guess.dob.strftime('%Y/%m/%d') }}</td>
+                <td>{{ guess.sex }}</td>
+                <td>{{ guess.first_name }}</td>
+                <td>{{ guess.height }}</td>
+                <td>{{ guess.weight }}</td>
+                <td>{{ guess.skin_color or '-' }}</td>
+                <td>{{ guess.eye_color or '-' }}</td>
+                <td>{{ guess.hair_color or '-' }}</td>
+                <td>
+                    {% if current_user.is_authenticated and guess.user_id == current_user.id %}
+                        <a href="{{ url_for('guess') }}" class="action-icon" title="Modifier mon pronostic">✏️</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- jQuery and DataTables JS -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#guessesTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json"
+            },
+            "pageLength": 25,
+            "responsive": true,
+            "order": [[ 0, "asc" ]] // Sort by Participant name by default
+        });
+    });
+</script>
+{% endblock %}

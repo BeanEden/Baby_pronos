@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="form-container">
+    <h2>{% if existing %}Modifier{% else %}Faire{% endif %} votre pronostic</h2>
+    <p class="form-subtitle">Laissez-vous guider par votre intuition !</p>
+    
+    <form method="POST" action="" class="custom-form two-columns">
+        {{ form.hidden_tag() }}
+        
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                Veuillez corriger les erreurs :
+                <ul style="margin-top: 5px; margin-bottom: 0;">
+                {% for field_name, field_errors in form.errors.items() %}
+                    {% for error in field_errors %}
+                        <li><strong>{{ form[field_name].label.text }}</strong> : {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+        
+        <div class="form-section">
+            <h3>Les Essentiels</h3>
+            <div class="form-group">
+                {{ form.dob.label }}
+                {{ form.dob(class="form-control", type="date") }}
+            </div>
+            <div class="form-group">
+                {{ form.sex.label }}
+                {{ form.sex(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.first_name.label }}
+                {{ form.first_name(class="form-control", placeholder="Ex: Lucas, Emma...") }}
+            </div>
+            <div class="form-group">
+                {{ form.height.label }}
+                {{ form.height(class="form-control", placeholder="Ex: 50.5", step="0.1") }}
+            </div>
+            <div class="form-group">
+                {{ form.weight.label }}
+                {{ form.weight(class="form-control", placeholder="Ex: 3.2", step="0.1") }}
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>Plus tard... (Optionnel)</h3>
+            <p class="section-desc">Comment imaginez-vous le bébé en grandissant ?</p>
+            <div class="form-group">
+                {{ form.skin_color.label }}
+                {{ form.skin_color(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.eye_color.label }}
+                {{ form.eye_color(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.hair_color.label }}
+                {{ form.hair_color(class="form-control") }}
+            </div>
+        </div>
+
+        <div class="form-group submit-group full-width">
+            {{ form.submit(class="btn-primary full-width large-btn") }}
+        </div>
+    </form>
+</div>
+{% endblock %}

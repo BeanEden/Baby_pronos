@@ -1,6 +1,6 @@
 :root {
-    --primary-color: #89CFF0; /* Baby blue */
-    --secondary-color: #a1c4fd; /* Soft blue */
+    --primary-color: #4A90E2; /* Deeper blue for better contrast */
+    --secondary-color: #7BB0F1; /* Slightly lighter blue */
     --accent-color: #f6d365; /* Soft yellow */
     --accent-secondary: #ffdea8; /* Soft warm */
     --text-main: #2d3436;

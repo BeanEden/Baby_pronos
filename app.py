@@ -233,7 +233,12 @@ def register():
             flash('Ce prénom et nom sont déjà enregistrés.', 'danger')
             return redirect(url_for('register'))
         hashed_password = generate_password_hash(form.password.data, method='pbkdf2:sha256')
-        is_admin = False # Admin account is already created, new users are not admins
+        
+        # Si la base de données est vide, le premier inscrit devient admin
+        is_admin = False
+        if User.query.count() == 0:
+            is_admin = True
+            
         new_user = User(username=username_val, password_hash=hashed_password, is_admin=is_admin, category=form.category.data)
         db.session.add(new_user)
         db.session.commit()

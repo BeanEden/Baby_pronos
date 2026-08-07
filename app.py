@@ -8,8 +8,13 @@ from wtforms import StringField, PasswordField, SubmitField, DateField, SelectFi
 from wtforms.validators import DataRequired, EqualTo, Optional
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'my_super_secret_key_baby_shower'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///baby_shower.db'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'my_super_secret_key_baby_shower')
+
+database_url = os.environ.get('DATABASE_URL', 'sqlite:///baby_shower.db')
+if database_url.startswith('postgres://'):
+    database_url = database_url.replace('postgres://', 'postgresql://', 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)

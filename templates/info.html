@@ -16,12 +16,38 @@
 
     {% if clues_by_theme %}
         {% for theme, clues in clues_by_theme.items() %}
-        <div class="info-section" style="margin-bottom: 2rem;">
-            <h3 style="color: var(--primary-color); border-bottom: 2px solid var(--accent-secondary); padding-bottom: 0.5rem; display: inline-block;">{{ theme }}</h3>
-            <div style="background: rgba(255,255,255,0.5); padding: 1.5rem; border-radius: 12px; margin-top: 1rem;">
-                <ul style="list-style-type: none; padding: 0; margin: 0;">
+        <div class="info-section clue-section" style="margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--accent-secondary); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+                <h3 style="color: var(--primary-color); margin: 0;">{{ theme }}</h3>
+                
+                {% set has_relations = namespace(value=false) %}
+                {% for clue in clues %}
+                    {% if clue.relation_link %}
+                        {% set has_relations.value = true %}
+                    {% endif %}
+                {% endfor %}
+                
+                <div style="display: flex; gap: 10px;">
+                    <button class="sort-btn btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.9rem;" data-sort="asc">Trier A-Z</button>
+                    {% if has_relations.value %}
+                    <select class="clue-filter" style="padding: 0.3rem; border-radius: 6px; border: 1px solid #ccc; font-family: inherit;">
+                        <option value="all">Toutes les origines</option>
+                        {% set relation_links = [] %}
+                        {% for clue in clues %}
+                            {% if clue.relation_link and clue.relation_link not in relation_links %}
+                                {% set _ = relation_links.append(clue.relation_link) %}
+                                <option value="{{ clue.relation_link }}">{{ clue.relation_link }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div style="background: rgba(255,255,255,0.5); padding: 1.5rem; border-radius: 12px;">
+                <ul class="clue-list" style="list-style-type: none; padding: 0; margin: 0;">
                     {% for clue in clues %}
-                    <li style="margin-bottom: 0.8rem; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 0.8rem;">
+                    <li class="clue-item" data-relation="{{ clue.relation_link or 'none' }}" style="margin-bottom: 0.8rem; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 0.8rem;">
                         <strong style="font-size: 1.1rem; color: var(--text-main);">{{ clue.value }}</strong>
                         {% if clue.relation_link or clue.relative_name %}
                             <span style="color: var(--text-muted); font-size: 0.9rem; margin-left: 10px;">
@@ -44,4 +70,54 @@
         <a href="{{ url_for('guess') }}" class="btn-primary large-btn">Je suis prêt(e) à faire mon pronostic !</a>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const filters = document.querySelectorAll('.clue-filter');
+        
+        filters.forEach(filter => {
+            filter.addEventListener('change', function() {
+                const selectedValue = this.value;
+                const section = this.closest('.clue-section');
+                const items = section.querySelectorAll('.clue-item');
+                
+                items.forEach(item => {
+                    if (selectedValue === 'all' || item.getAttribute('data-relation') === selectedValue) {
+                        item.style.display = '';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        });
+
+        const sortBtns = document.querySelectorAll('.sort-btn');
+        sortBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const currentSort = this.getAttribute('data-sort');
+                const nextSort = currentSort === 'asc' ? 'desc' : 'asc';
+                this.setAttribute('data-sort', nextSort);
+                this.innerText = nextSort === 'asc' ? 'Trier A-Z' : 'Trier Z-A';
+
+                const section = this.closest('.clue-section');
+                const list = section.querySelector('.clue-list');
+                const items = Array.from(list.querySelectorAll('.clue-item'));
+
+                items.sort((a, b) => {
+                    const textA = a.querySelector('strong').innerText.toLowerCase();
+                    const textB = b.querySelector('strong').innerText.toLowerCase();
+                    if (nextSort === 'asc') {
+                        return textA.localeCompare(textB);
+                    } else {
+                        return textB.localeCompare(textA);
+                    }
+                });
+
+                items.forEach(item => list.appendChild(item));
+            });
+        });
+    });
+</script>
 {% endblock %}

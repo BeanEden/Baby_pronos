@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="header-section">
+    <h1>Baby Shower</h1>
+    <p>Le jeu des pronostics pour bébé !</p>
+</div>
+
+<div class="form-container" style="max-width: 800px; text-align: center; margin-top: 2rem;">
+    
+    {% if config.welcome_message %}
+    <div style="background: rgba(255, 255, 255, 0.6); padding: 2rem; border-radius: 12px; margin-bottom: 3rem; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+        <p style="white-space: pre-line; font-size: 1.1rem; line-height: 1.6; margin: 0; color: var(--text-color);">
+            {{ config.welcome_message }}
+        </p>
+    </div>
+    {% endif %}
+
+    <h2 style="margin-bottom: 2rem;">Que souhaitez-vous faire ?</h2>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; justify-content: center;">
+        
+        <a href="{{ url_for('guess') }}" class="btn-primary" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; border-radius: 12px; text-decoration: none; transition: transform 0.2s;">
+            <span style="font-size: 2.5rem; margin-bottom: 1rem;">✍️</span>
+            <span style="font-size: 1.2rem; font-weight: bold;">Faire un pronostic</span>
+            <span style="font-size: 0.9rem; opacity: 0.8; margin-top: 0.5rem; text-align: center;">Tentez votre chance !</span>
+        </a>
+
+        <a href="{{ url_for('info') }}" class="btn-secondary" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; border-radius: 12px; text-decoration: none; transition: transform 0.2s;">
+            <span style="font-size: 2.5rem; margin-bottom: 1rem;">🔍</span>
+            <span style="font-size: 1.2rem; font-weight: bold;">Voir les indices</span>
+            <span style="font-size: 0.9rem; opacity: 0.8; margin-top: 0.5rem; text-align: center;">Besoin d'aide pour choisir ?</span>
+        </a>
+
+        {% if config.enable_table_page or (current_user.is_authenticated and current_user.is_admin) %}
+        <a href="{{ url_for('public_table') }}" class="btn-secondary" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; border-radius: 12px; text-decoration: none; transition: transform 0.2s; background-color: #0984e3; color: white;">
+            <span style="font-size: 2.5rem; margin-bottom: 1rem;">📋</span>
+            <span style="font-size: 1.2rem; font-weight: bold;">Tableau des pronostics</span>
+            <span style="font-size: 0.9rem; opacity: 0.8; margin-top: 0.5rem; text-align: center;">Ce que les autres ont dit</span>
+        </a>
+        {% endif %}
+
+        {% if config.enable_stats_page or (current_user.is_authenticated and current_user.is_admin) %}
+        <a href="{{ url_for('stats') }}" class="btn-secondary" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; border-radius: 12px; text-decoration: none; transition: transform 0.2s; background-color: #6c5ce7; color: white;">
+            <span style="font-size: 2.5rem; margin-bottom: 1rem;">📊</span>
+            <span style="font-size: 1.2rem; font-weight: bold;">Statistiques</span>
+            <span style="font-size: 0.9rem; opacity: 0.8; margin-top: 0.5rem; text-align: center;">Tendances et graphiques</span>
+        </a>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

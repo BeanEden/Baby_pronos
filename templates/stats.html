@@ -1,0 +1,605 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<style>
+    .stats-container {
+        margin-top: 2rem;
+    }
+
+    .grid-row-1 {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .grid-row-2, .grid-row-3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .card {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        padding: 2rem;
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.05);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+
+    .chart-box {
+        width: 100%;
+        height: 350px;
+    }
+
+    .kpi-box {
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 12px;
+        text-align: center;
+    }
+
+    .kpi-title {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 0.5rem;
+    }
+
+    .kpi-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    .toggle-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 2rem;
+        justify-content: flex-end;
+    }
+    
+    /* Toggle Switch Styles */
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+        margin-left: 15px;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; }
+    .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; }
+    input:checked + .slider { background-color: var(--primary-color); }
+    input:focus + .slider { box-shadow: 0 0 1px var(--primary-color); }
+    input:checked + .slider:before { transform: translateX(26px); }
+    .slider.round { border-radius: 34px; }
+    .slider.round:before { border-radius: 50%; }
+
+    @media (max-width: 768px) {
+        .grid-row-1, .grid-row-2, .grid-row-3 { grid-template-columns: 1fr; }
+    }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts-wordcloud@2.1.0/dist/echarts-wordcloud.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="header-section">
+    <h1>Statistiques des Pronostics</h1>
+    <p>Découvrez les tendances des prédictions de tout le monde !</p>
+</div>
+
+<div class="toggle-container" style="justify-content: flex-end;">
+    <div style="display: flex; align-items: center;">
+        <span style="font-weight: 600; font-size: 1.1rem; color: var(--text-color);">Vue par catégorie</span>
+        <label class="switch">
+            <input type="checkbox" id="categoryToggle">
+            <span class="slider round"></span>
+        </label>
+    </div>
+</div>
+
+<div class="stats-container">
+    <div class="grid-row-1">
+        <!-- KPIs -->
+        <div class="card">
+            <h2 style="margin-bottom: 1.5rem; text-align: center;">📊 Chiffres Clés</h2>
+            
+            <div class="kpi-box">
+                <div class="kpi-title">Date Terme Officielle</div>
+                <div class="kpi-value">{{ actual_due_date if actual_due_date else 'Non définie' }}</div>
+            </div>
+            
+            <div class="kpi-box">
+                <div class="kpi-title">Moyenne Estimée (Terme)</div>
+                <div class="kpi-value" id="kpi-avg-dob">-</div>
+            </div>
+            
+            <div class="kpi-box">
+                <div class="kpi-title">Moyenne Estimée (Taille)</div>
+                <div class="kpi-value" id="kpi-avg-height">-</div>
+            </div>
+            
+            <div class="kpi-box">
+                <div class="kpi-title">Moyenne Estimée (Poids)</div>
+                <div class="kpi-value" id="kpi-avg-weight">-</div>
+            </div>
+        </div>
+
+        <!-- Calendar (DOB) -->
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 style="margin: 0;">📅 Date du terme</h2>
+                <div style="display: flex; align-items: center; gap: 10px; font-size: 0.9rem;">
+                    <span style="color: var(--text-muted);">Du :</span>
+                    <input type="date" id="dateStart" class="form-control" style="padding: 0.2rem; border-radius: 6px; border: 1px solid #ccc; width: auto; font-size: 0.9rem;">
+                    <span style="color: var(--text-muted);">Au :</span>
+                    <input type="date" id="dateEnd" class="form-control" style="padding: 0.2rem; border-radius: 6px; border: 1px solid #ccc; width: auto; font-size: 0.9rem;">
+                </div>
+            </div>
+            <div id="chart-dob" class="chart-box"></div>
+        </div>
+    </div>
+
+    <div class="grid-row-2">
+        <!-- Height -->
+        <div class="card">
+            <h2 style="margin-bottom: 1rem;">📏 Taille (cm)</h2>
+            <div id="chart-height" class="chart-box"></div>
+        </div>
+
+        <!-- Weight -->
+        <div class="card">
+            <h2 style="margin-bottom: 1rem;">⚖️ Poids (kg)</h2>
+            <div id="chart-weight" class="chart-box"></div>
+        </div>
+    </div>
+
+    <div class="grid-row-3">
+        <!-- Word Cloud -->
+        <div class="card">
+            <h2 style="margin-bottom: 1rem;">💭 Prénoms (Nuage)</h2>
+            <div id="chart-names-cloud" class="chart-box"></div>
+        </div>
+
+        <!-- Top Names -->
+        <div class="card">
+            <h2 style="margin-bottom: 1rem;">🏆 Top Prénoms</h2>
+            <div id="chart-names-top" class="chart-box"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const rawData = {{ stats_data | safe }};
+    const officialDueDate = "{{ actual_due_date or '' }}";
+    const categories = ['Amis', 'Collègues', 'Famille', 'Autre'];
+    const categoryColors = {
+        'Amis': '#ff7675', 
+        'Collègues': '#0984e3', 
+        'Famille': '#00b894', 
+        'Autre': '#fdcb6e'
+    };
+
+    let viewByCategory = false;
+    let filteredData = rawData;
+
+    function applyFilters() {
+        let start = document.getElementById('dateStart').value;
+        let end = document.getElementById('dateEnd').value;
+        
+        filteredData = rawData.filter(d => {
+            if (!d.dob) return true; // keep if no date? or filter out? Let's filter out if dates are strictly set and it has no date
+            if (start && d.dob < start) return false;
+            if (end && d.dob > end) return false;
+            return true;
+        });
+        
+        computeKPIs();
+        renderCharts();
+    }
+
+    // Calculate KPIs
+    function computeKPIs() {
+        let validHeights = filteredData.map(d => d.height).filter(h => h != null);
+        let validWeights = filteredData.map(d => d.weight).filter(w => w != null);
+        
+        if (validHeights.length > 0) {
+            let avgH = validHeights.reduce((a, b) => a + b, 0) / validHeights.length;
+            document.getElementById('kpi-avg-height').innerText = avgH.toFixed(1) + ' cm';
+        } else {
+            document.getElementById('kpi-avg-height').innerText = '-';
+        }
+        
+        if (validWeights.length > 0) {
+            let avgW = validWeights.reduce((a, b) => a + b, 0) / validWeights.length;
+            document.getElementById('kpi-avg-weight').innerText = avgW.toFixed(2) + ' kg';
+        } else {
+            document.getElementById('kpi-avg-weight').innerText = '-';
+        }
+
+        let validDobs = filteredData.map(d => d.dob).filter(d => d != null).map(d => new Date(d).getTime());
+        if (validDobs.length > 0) {
+            let avgD = validDobs.reduce((a, b) => a + b, 0) / validDobs.length;
+            let dObj = new Date(avgD);
+            document.getElementById('kpi-avg-dob').innerText = dObj.toISOString().split('T')[0];
+        } else {
+            document.getElementById('kpi-avg-dob').innerText = '-';
+        }
+    }
+    
+    // Charts instances
+    let chartDob = echarts.init(document.getElementById('chart-dob'));
+    let chartHeight = echarts.init(document.getElementById('chart-height'));
+    let chartWeight = echarts.init(document.getElementById('chart-weight'));
+    let chartNamesCloud = echarts.init(document.getElementById('chart-names-cloud'));
+    let chartNamesTop = echarts.init(document.getElementById('chart-names-top'));
+
+    function renderCharts() {
+        renderDobChart();
+        renderHeightChart();
+        renderWeightChart();
+        renderNamesCharts();
+    }
+
+    // --- CALENDAR CHART (DOB) ---
+    function renderDobChart() {
+        let countsByDate = {};
+        let catsByDate = {};
+        let years = new Set();
+        let dates = [];
+        
+        filteredData.forEach(d => {
+            if (d.dob) {
+                let dateStr = d.dob;
+                years.add(dateStr.substring(0, 4));
+                dates.push(dateStr);
+                
+                countsByDate[dateStr] = (countsByDate[dateStr] || 0) + 1;
+                
+                if (!catsByDate[dateStr]) catsByDate[dateStr] = {};
+                catsByDate[dateStr][d.category] = (catsByDate[dateStr][d.category] || 0) + 1;
+            }
+        });
+
+        let start = document.getElementById('dateStart').value;
+        let end = document.getElementById('dateEnd').value;
+        
+        let calRange = new Date().getFullYear();
+        if (start && end) {
+            calRange = [start, end];
+        } else if (start) {
+            calRange = [start, start.substring(0,4) + '-12-31'];
+        } else if (end) {
+            calRange = [end.substring(0,4) + '-01-01', end];
+        } else if (dates.length > 0) {
+            dates.sort();
+            // If the dates span multiple years, just use the min year to max year, else use the year
+            let minYear = dates[0].substring(0,4);
+            let maxYear = dates[dates.length-1].substring(0,4);
+            if (minYear === maxYear) {
+                calRange = minYear;
+            } else {
+                calRange = [dates[0], dates[dates.length-1]];
+            }
+        }
+        
+        let option = {
+            tooltip: {
+                position: 'top',
+                formatter: function (p) {
+                    let date = p.data[0];
+                    if (!viewByCategory) {
+                        return date + ': ' + p.data[1] + ' pronostic(s)';
+                    } else {
+                        return date + ' (' + p.seriesName + '): ' + p.data[1] + ' pronostic(s)';
+                    }
+                }
+            },
+            visualMap: !viewByCategory ? {
+                min: 0,
+                max: Math.max(...Object.values(countsByDate), 5),
+                calculable: true,
+                orient: 'horizontal',
+                left: 'center',
+                top: 0,
+                inRange: {
+                    color: ['#f1f2f6', '#74b9ff', '#0984e3']
+                }
+            } : null,
+            calendar: {
+                top: 60,
+                range: calRange,
+                cellSize: ['auto', 20],
+                right: 30,
+                dayLabel: { nameMap: 'FR' },
+                monthLabel: { nameMap: 'FR' },
+                itemStyle: {
+                    borderWidth: 0.5,
+                    borderColor: '#ccc'
+                }
+            },
+            series: []
+        };
+
+        if (!viewByCategory) {
+            let heatData = Object.keys(countsByDate).map(date => [date, countsByDate[date]]);
+            option.series.push({
+                type: 'heatmap',
+                coordinateSystem: 'calendar',
+                data: heatData
+            });
+        } else {
+            categories.forEach(cat => {
+                let scatterData = [];
+                Object.keys(catsByDate).forEach(date => {
+                    if (catsByDate[date][cat]) {
+                        scatterData.push([date, catsByDate[date][cat]]);
+                    }
+                });
+                if (scatterData.length > 0) {
+                    option.series.push({
+                        name: cat,
+                        type: 'effectScatter',
+                        coordinateSystem: 'calendar',
+                        data: scatterData,
+                        symbolSize: function (val) {
+                            return 10 + val[1] * 5;
+                        },
+                        itemStyle: {
+                            color: categoryColors[cat]
+                        }
+                    });
+                }
+            });
+            option.legend = {
+                data: categories,
+                top: 0
+            };
+        }
+
+        if (officialDueDate && officialDueDate !== 'None') {
+            option.series.push({
+                name: 'Terme Officiel',
+                type: 'effectScatter',
+                coordinateSystem: 'calendar',
+                data: [[officialDueDate, 1]],
+                symbolSize: 15,
+                itemStyle: {
+                    color: '#ff0000', // Red color
+                    shadowBlur: 10,
+                    shadowColor: '#ff0000'
+                },
+                zlevel: 2,
+                tooltip: {
+                    formatter: function() {
+                        return officialDueDate + ' : Terme Officiel';
+                    }
+                }
+            });
+        }
+
+        chartDob.setOption(option, true);
+    }
+
+    function prepareHistogramData(field, binSize = 0.5) {
+        let globalCounts = {};
+        let catCounts = {};
+        let values = filteredData.map(d => d[field]).filter(v => v != null);
+        if (values.length === 0) return { xAxis: [], globalSeries: [], catSeries: {} };
+
+        let minVal = Math.floor(Math.min(...values) / binSize) * binSize;
+        let maxVal = Math.ceil(Math.max(...values) / binSize) * binSize;
+
+        let bins = [];
+        for (let v = minVal; v <= maxVal; v += binSize) {
+            let binLabel = v.toFixed(1);
+            if (binSize >= 1) binLabel = Math.round(v).toString();
+            bins.push(binLabel);
+            globalCounts[binLabel] = 0;
+            catCounts[binLabel] = {};
+            categories.forEach(c => catCounts[binLabel][c] = 0);
+        }
+
+        filteredData.forEach(d => {
+            if (d[field] != null) {
+                let val = d[field];
+                let bIdx = Math.floor((val - minVal) / binSize);
+                if (bIdx >= bins.length) bIdx = bins.length - 1;
+                if (bIdx < 0) bIdx = 0;
+                
+                let binLabel = bins[bIdx];
+                globalCounts[binLabel]++;
+                if(d.category) {
+                    if(!catCounts[binLabel][d.category]) catCounts[binLabel][d.category] = 0;
+                    catCounts[binLabel][d.category]++;
+                }
+            }
+        });
+
+        let xAxis = bins;
+        let globalSeries = bins.map(b => globalCounts[b]);
+        let catSeries = {};
+        categories.forEach(c => {
+            catSeries[c] = bins.map(b => catCounts[b][c] || 0);
+        });
+
+        return { xAxis, globalSeries, catSeries };
+    }
+
+    function renderHeightChart() {
+        let hist = prepareHistogramData('height', 1);
+        let option = {
+            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+            grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+            xAxis: { type: 'category', data: hist.xAxis, name: 'cm', nameLocation: 'end' },
+            yAxis: { type: 'value', name: 'Pronostics', minInterval: 1 },
+            series: []
+        };
+        if (!viewByCategory) {
+            option.series.push({
+                name: 'Tous', type: 'bar', data: hist.globalSeries,
+                itemStyle: { color: '#00b894', borderRadius: [5, 5, 0, 0] }
+            });
+        } else {
+            categories.forEach(cat => {
+                option.series.push({
+                    name: cat, type: 'bar', stack: 'total', data: hist.catSeries[cat],
+                    itemStyle: { color: categoryColors[cat] }
+                });
+            });
+            option.legend = { data: categories, top: 0 };
+        }
+        chartHeight.setOption(option, true);
+    }
+
+    function renderWeightChart() {
+        let hist = prepareHistogramData('weight', 0.2);
+        let option = {
+            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+            grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+            xAxis: { type: 'category', data: hist.xAxis, name: 'kg', nameLocation: 'end' },
+            yAxis: { type: 'value', name: 'Pronostics', minInterval: 1 },
+            series: []
+        };
+        if (!viewByCategory) {
+            option.series.push({
+                name: 'Tous', type: 'bar', data: hist.globalSeries,
+                itemStyle: { color: '#0984e3', borderRadius: [5, 5, 0, 0] }
+            });
+        } else {
+            categories.forEach(cat => {
+                option.series.push({
+                    name: cat, type: 'bar', stack: 'total', data: hist.catSeries[cat],
+                    itemStyle: { color: categoryColors[cat] }
+                });
+            });
+            option.legend = { data: categories, top: 0 };
+        }
+        chartWeight.setOption(option, true);
+    }
+
+    function renderNamesCharts() {
+        let nameCounts = {};
+        let nameCountsByCat = {};
+        
+        filteredData.forEach(d => {
+            if (d.first_name && d.first_name.trim() !== '') {
+                // capitalize first letter for consistency
+                let name = d.first_name.trim();
+                name = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+                
+                nameCounts[name] = (nameCounts[name] || 0) + 1;
+                
+                if (!nameCountsByCat[name]) nameCountsByCat[name] = {};
+                if (d.category) {
+                    nameCountsByCat[name][d.category] = (nameCountsByCat[name][d.category] || 0) + 1;
+                }
+            }
+        });
+
+        let namesArray = Object.keys(nameCounts).map(n => ({ name: n, value: nameCounts[n] }));
+        namesArray.sort((a, b) => b.value - a.value);
+
+        // --- WORD CLOUD ---
+        let cloudOption = {
+            tooltip: { show: true },
+            series: [{
+                type: 'wordCloud',
+                shape: 'circle',
+                left: 'center',
+                top: 'center',
+                width: '100%',
+                height: '100%',
+                right: null,
+                bottom: null,
+                sizeRange: [14, 60],
+                rotationRange: [-45, 45],
+                rotationStep: 45,
+                gridSize: 8,
+                drawOutOfBound: false,
+                textStyle: {
+                    color: function () {
+                        if (!viewByCategory) {
+                            return 'rgb(' + [
+                                Math.round(Math.random() * 160),
+                                Math.round(Math.random() * 160),
+                                Math.round(Math.random() * 160)
+                            ].join(',') + ')';
+                        }
+                        // Default fallback if category mode is active (word cloud doesn't split by category easily)
+                        return '#0984e3';
+                    }
+                },
+                data: namesArray
+            }]
+        };
+        
+        // If viewByCategory, maybe we color names based on the majority category or something?
+        // But word cloud doesn't support multiple parts for one word, so let's just keep random colors for cloud.
+        chartNamesCloud.setOption(cloudOption, true);
+
+        // --- TOP NAMES (BAR) ---
+        // Take top 10
+        let topNamesArray = namesArray.slice(0, 10).reverse(); // Reverse for horizontal bar chart (bottom to top)
+        let topNamesNames = topNamesArray.map(item => item.name);
+        
+        let topOption = {
+            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+            grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+            xAxis: { type: 'value', minInterval: 1 },
+            yAxis: { type: 'category', data: topNamesNames },
+            series: []
+        };
+        
+        if (!viewByCategory) {
+            topOption.series.push({
+                name: 'Tous',
+                type: 'bar',
+                data: topNamesArray.map(item => item.value),
+                itemStyle: { color: '#6c5ce7', borderRadius: [0, 5, 5, 0] }
+            });
+        } else {
+            categories.forEach(cat => {
+                let catData = topNamesNames.map(name => nameCountsByCat[name][cat] || 0);
+                topOption.series.push({
+                    name: cat,
+                    type: 'bar',
+                    stack: 'total',
+                    data: catData,
+                    itemStyle: { color: categoryColors[cat] }
+                });
+            });
+            topOption.legend = { data: categories, top: 0 };
+        }
+        
+        chartNamesTop.setOption(topOption, true);
+    }
+
+    applyFilters();
+
+    document.getElementById('categoryToggle').addEventListener('change', function(e) {
+        viewByCategory = e.target.checked;
+        applyFilters();
+    });
+    
+    document.getElementById('dateStart').addEventListener('change', applyFilters);
+    document.getElementById('dateEnd').addEventListener('change', applyFilters);
+
+    window.addEventListener('resize', function() {
+        chartDob.resize();
+        chartHeight.resize();
+        chartWeight.resize();
+        chartNamesCloud.resize();
+        chartNamesTop.resize();
+    });
+</script>
+{% endblock %}

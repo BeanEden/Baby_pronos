@@ -5,6 +5,13 @@
     <h2>{% if existing %}Modifier{% else %}Faire{% endif %} votre pronostic</h2>
     <p class="form-subtitle">Laissez-vous guider par votre intuition !</p>
     
+    {% if config.prize_text %}
+    <div style="background: rgba(255, 215, 0, 0.2); padding: 1rem; border-radius: 8px; border: 2px dashed #eccc68; margin-bottom: 1.5rem; text-align: center;">
+        <h3 style="margin-top: 0; color: #d35400;">🏆 À gagner</h3>
+        <p style="margin-bottom: 0; white-space: pre-line;">{{ config.prize_text }}</p>
+    </div>
+    {% endif %}
+
     <form method="POST" action="" class="custom-form two-columns">
         {{ form.hidden_tag() }}
         
@@ -57,7 +64,7 @@
                     {{ form.first_name(class="form-control", placeholder="Ex: Lucas, Emma...") }}
                     {% if config.show_hints and prenom_clues %}
                     <select class="form-control" style="width: auto; max-width: 150px; font-size: 0.85rem;" onchange="if(this.value) document.getElementById('{{ form.first_name.id }}').value = this.value">
-                        <option value="">-- Indices --</option>
+                        <option value="">Prénoms de la famille</option>
                         {% for clue in prenom_clues %}
                         <option value="{{ clue.value }}">{{ clue.value }}</option>
                         {% endfor %}
@@ -101,6 +108,53 @@
             <div class="form-group">
                 {{ form.hair_color.label }}
                 {{ form.hair_color(class="form-control") }}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if config.rules_text or scoring_rules %}
+        <div class="full-width" style="background: rgba(0, 0, 0, 0.05); padding: 1.5rem; border-radius: 8px; margin-top: 1rem; margin-bottom: 1.5rem;">
+            <h4 style="margin-top: 0; color: var(--primary-color); display: flex; align-items: center; gap: 8px;">📋 Règles de comptabilisation</h4>
+            
+            {% if config.rules_text %}
+            <p style="margin-bottom: 1.5rem; font-size: 0.95rem; color: var(--text-color); white-space: pre-line;">{{ config.rules_text }}</p>
+            {% endif %}
+
+            {% if scoring_rules %}
+            <div style="background: white; border-radius: 8px; overflow: hidden; border: 1px solid rgba(0,0,0,0.1);">
+                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+                    <thead>
+                        <tr style="background-color: var(--accent-secondary); color: var(--primary-color);">
+                            <th style="padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.1);">Catégorie</th>
+                            <th style="padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.1);">Points pour le plus proche</th>
+                            <th style="padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.1);">Diminution par rang</th>
+                            <th style="padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.1);">Bonus valeur exacte</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for rule in scoring_rules %}
+                        <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                            <td style="padding: 10px; font-weight: 600;">{{ rule.category }}</td>
+                            <td style="padding: 10px; color: var(--primary-color); font-weight: bold;">{{ rule.base_points }} pts</td>
+                            <td style="padding: 10px; color: #d63031;">
+                                {% if rule.decrement_per_rank and rule.decrement_per_rank > 0 %}
+                                    -{{ rule.decrement_per_rank }} pts
+                                {% else %}
+                                    <span style="color: var(--text-muted); font-size: 0.8rem; font-style: italic;">Pas de diminution</span>
+                                {% endif %}
+                            </td>
+                            <td style="padding: 10px; color: #00b894; font-weight: bold;">
+                                {% if rule.exact_bonus and rule.exact_bonus > 0 %}
+                                    +{{ rule.exact_bonus }} pts
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
             {% endif %}
         </div>

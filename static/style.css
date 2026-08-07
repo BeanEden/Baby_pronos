@@ -403,6 +403,15 @@ body {
     .navbar {
         flex-direction: column;
         gap: 1rem;
+        padding: 1rem;
+    }
+    .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.8rem;
+    }
+    .nav-item {
+        font-size: 0.9rem;
     }
     .two-columns {
         flex-direction: column;

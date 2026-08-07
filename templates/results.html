@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="header-section">
+    <h1>Calculateur de Résultats</h1>
+    <p>Saisissez les véritables mensurations du bébé pour générer le classement final !</p>
+</div>
+
+<div class="form-container" style="max-width: 1000px; margin-top: 2rem;">
+    <h2 style="color: var(--primary-color); border-bottom: 2px solid var(--accent-secondary); padding-bottom: 0.5rem; margin-bottom: 2rem;">1. Saisie des données réelles</h2>
+    
+    <form method="POST" action="" class="custom-form">
+        {{ form.hidden_tag() }}
+        
+        <div class="two-columns">
+            <div class="form-section">
+                <div class="form-group">
+                    {{ form.dob.label }}
+                    {{ form.dob(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.sex.label }}
+                    {{ form.sex(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.first_name.label }}
+                    {{ form.first_name(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.height.label }}
+                    {{ form.height(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.weight.label }}
+                    {{ form.weight(class="form-control") }}
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <div class="form-group">
+                    {{ form.skin_color.label }}
+                    {{ form.skin_color(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.eye_color.label }}
+                    {{ form.eye_color(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.hair_color.label }}
+                    {{ form.hair_color(class="form-control") }}
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-group submit-group" style="margin-top: 2rem;">
+            {{ form.submit(class="btn-primary full-width large-btn", style="background-color: #6c5ce7; font-size: 1.2rem; padding: 1rem;") }}
+        </div>
+    </form>
+
+    {% if results %}
+    <hr style="border: 0; height: 1px; background: rgba(0,0,0,0.1); margin: 3rem 0;">
+    
+    <h2 style="color: var(--primary-color); border-bottom: 2px solid var(--accent-secondary); padding-bottom: 0.5rem; margin-bottom: 2rem; text-align: center;">🏆 Classement Final 🏆</h2>
+    
+    <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 2rem;">
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; min-width: 800px;">
+                <thead>
+                    <tr style="background-color: var(--accent-secondary); color: var(--primary-color);">
+                        <th style="padding: 15px; border-bottom: 2px solid rgba(0,0,0,0.1); text-align: center; width: 60px;">Rang</th>
+                        <th style="padding: 15px; border-bottom: 2px solid rgba(0,0,0,0.1);">Participant</th>
+                        <th style="padding: 15px; border-bottom: 2px solid rgba(0,0,0,0.1); font-size: 1.1rem; color: #6c5ce7;">Total Points</th>
+                        {% for cat in results.categories %}
+                        <th style="padding: 15px; border-bottom: 2px solid rgba(0,0,0,0.1); font-size: 0.9rem; font-weight: normal; color: var(--text-color);">{{ cat }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for res in results.list %}
+                    <tr style="border-bottom: 1px solid rgba(0,0,0,0.05); transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='rgba(0,0,0,0.02)'" onmouseout="this.style.backgroundColor='transparent'">
+                        <td style="padding: 15px; text-align: center; font-weight: bold; font-size: 1.2rem; 
+                            {% if res.rank == 1 %}color: #f1c40f;
+                            {% elif res.rank == 2 %}color: #95a5a6;
+                            {% elif res.rank == 3 %}color: #d35400;
+                            {% else %}color: var(--text-muted);{% endif %}">
+                            {% if res.rank == 1 %}🥇
+                            {% elif res.rank == 2 %}🥈
+                            {% elif res.rank == 3 %}🥉
+                            {% else %}{{ res.rank }}{% endif %}
+                        </td>
+                        <td style="padding: 15px; font-weight: 600;">{{ res.user.username }}</td>
+                        <td style="padding: 15px; font-weight: bold; color: #6c5ce7; font-size: 1.1rem;">{{ res.total_score }}</td>
+                        {% for cat in results.categories %}
+                        <td style="padding: 15px; font-size: 0.95rem; {% if res.details[cat] > 0 %}color: #00b894; font-weight: bold;{% else %}color: var(--text-muted);{% endif %}">
+                            {{ res.details[cat] }}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

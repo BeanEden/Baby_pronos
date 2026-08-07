@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="form-container" style="max-width: 900px;">
+    <h2>Modifier un indice</h2>
+    <p class="form-subtitle">Mettez à jour les informations de l'indice ci-dessous.</p>
+    
+    <form method="POST" action="" class="custom-form" style="background: rgba(255,255,255,0.4); padding: 1.5rem; border-radius: 12px;">
+        {{ form.hidden_tag() }}
+        
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                Veuillez corriger les erreurs ci-dessous.
+            </div>
+        {% endif %}
+
+        <div class="two-columns">
+            <div class="form-section">
+                <div class="form-group">
+                    {{ form.theme.label }}
+                    {{ form.theme(class="form-control", list="themes-list", autocomplete="off") }}
+                    <datalist id="themes-list">
+                        {% for t in themes %}
+                        <option value="{{ t }}"></option>
+                        {% endfor %}
+                    </datalist>
+                </div>
+                
+                <div class="form-group">
+                    {{ form.value.label }}
+                    {{ form.value(class="form-control", placeholder="Ex: Bleus, 50cm, Lucas...") }}
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-group">
+                    {{ form.relation_link.label }}
+                    {{ form.relation_link(class="form-control") }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.relative_name.label }}
+                    {{ form.relative_name(class="form-control", placeholder="Ex: Maman, Sœur du père...") }}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group submit-group full-width" style="display: flex; gap: 10px; margin-top: 1rem;">
+            <a href="{{ url_for('admin_info') }}" class="btn-secondary full-width large-btn" style="text-align: center; text-decoration: none;">Annuler</a>
+            {{ form.submit_clue(class="btn-primary full-width large-btn", value="Mettre à jour l'indice") }}
+        </div>
+    </form>
+</div>
+{% endblock %}

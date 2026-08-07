@@ -1,5 +1,26 @@
 {% extends 'base.html' %}
 
+{% block head %}
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
+<style>
+    /* DataTables specific fixes for admin page */
+    #cluesTable_wrapper .dataTables_filter input {
+        border: 2px solid #e1e1e1;
+        border-radius: 10px;
+        padding: 0.5rem;
+        background: rgba(255,255,255,0.9);
+        margin-bottom: 1rem;
+    }
+    #cluesTable_wrapper .dataTables_length select {
+        border: 2px solid #e1e1e1;
+        border-radius: 8px;
+        padding: 0.3rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="form-container" style="max-width: 900px;">
     <h2>Administration : Gérer les indices</h2>
@@ -70,7 +91,78 @@
                 <div class="form-group" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px; font-weight: bold; color: #ff7675;">
                     {{ config_form.lock_sex() }} {{ config_form.lock_sex.label }}
                 </div>
+                <hr style="margin: 1rem 0; border: 0; height: 1px; background: rgba(0,0,0,0.1);">
+                <div class="form-group" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px; font-weight: bold; color: var(--primary-color);">
+                    {{ config_form.anonymous_mode() }} {{ config_form.anonymous_mode.label }}
+                </div>
+                <div class="form-group" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px; font-weight: bold; color: var(--primary-color);">
+                    {{ config_form.show_category() }} {{ config_form.show_category.label }}
+                </div>
+        </div>
+
+        <h3 style="margin-top: 2rem;">Accès aux pages et Accueil</h3>
+        <div class="two-columns">
+            <div class="form-section">
+                <div class="form-group" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px; font-weight: bold; color: var(--primary-color);">
+                    {{ config_form.enable_table_page() }} {{ config_form.enable_table_page.label }}
+                </div>
+                <div class="form-group" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px; font-weight: bold; color: var(--primary-color);">
+                    {{ config_form.enable_stats_page() }} {{ config_form.enable_stats_page.label }}
+                </div>
             </div>
+            <div class="form-section">
+                <div class="form-group">
+                    <div style="font-weight: bold; margin-bottom: 0.5rem; color: var(--primary-color);">
+                        {{ config_form.welcome_message.label }}
+                    </div>
+                    {{ config_form.welcome_message(class="form-control", rows="3", placeholder="Ex: Bienvenue sur le jeu des pronostics pour notre futur bébé !") }}
+                </div>
+            </div>
+        </div>
+
+        <h3 style="margin-top: 2rem;">Visibilité des colonnes dans le tableau public</h3>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">Masque les données des autres participants (ils verront quand même les leurs).</p>
+        <div class="two-columns">
+            <div class="form-section">
+                <div class="form-group" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px;">
+                    {{ config_form.table_show_dob() }} {{ config_form.table_show_dob.label }}
+                </div>
+                <div class="form-group" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px;">
+                    {{ config_form.table_show_sex() }} {{ config_form.table_show_sex.label }}
+                </div>
+                <div class="form-group" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px;">
+                    {{ config_form.table_show_first_name() }} {{ config_form.table_show_first_name.label }}
+                </div>
+                <div class="form-group" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px;">
+                    {{ config_form.table_show_height() }} {{ config_form.table_show_height.label }}
+                </div>
+            </div>
+            <div class="form-section">
+                <div class="form-group" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px;">
+                    {{ config_form.table_show_weight() }} {{ config_form.table_show_weight.label }}
+                </div>
+                <div class="form-group" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px;">
+                    {{ config_form.table_show_skin_color() }} {{ config_form.table_show_skin_color.label }}
+                </div>
+                <div class="form-group" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px;">
+                    {{ config_form.table_show_eye_color() }} {{ config_form.table_show_eye_color.label }}
+                </div>
+                <div class="form-group" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px;">
+                    {{ config_form.table_show_hair_color() }} {{ config_form.table_show_hair_color.label }}
+                </div>
+            </div>
+        </div>
+        <div class="form-group" style="margin-top: 1.5rem;">
+            <div style="font-weight: bold; margin-bottom: 0.5rem; color: var(--primary-color);">
+                {{ config_form.prize_text.label }}
+            </div>
+            {{ config_form.prize_text(class="form-control", rows="3", placeholder="Ex: Une bouteille de champagne pour le gagnant !") }}
+        </div>
+        <div class="form-group" style="margin-top: 1rem;">
+            <div style="font-weight: bold; margin-bottom: 0.5rem; color: var(--primary-color);">
+                {{ config_form.rules_text.label }}
+            </div>
+            {{ config_form.rules_text(class="form-control", rows="4", placeholder="Ex: 1 point pour la date, 1 point pour le prénom...") }}
         </div>
         <div class="form-group submit-group full-width" style="margin-top: 1rem;">
             {{ config_form.submit_config(class="btn-primary full-width large-btn", style="padding: 0.8rem;") }}
@@ -80,9 +172,75 @@
     <hr style="border: 0; height: 1px; background: rgba(0,0,0,0.1); margin-bottom: 2rem;">
     
     <div style="margin-bottom: 3rem;">
+        <h3>Barème de points (Règles structurées)</h3>
+        {% if scoring_rules %}
+        <table class="display responsive nowrap" style="width:100%; border-collapse: collapse; text-align: left; margin-bottom: 2rem;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--accent-secondary);">
+                    <th style="padding: 10px;">Catégorie</th>
+                    <th style="padding: 10px;">Points Max (plus proche/correct)</th>
+                    <th style="padding: 10px;">Points perdus par rang</th>
+                    <th style="padding: 10px;">Bonus exact</th>
+                    <th style="padding: 10px;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rule in scoring_rules %}
+                <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                    <td style="padding: 10px; font-weight: 600;">{{ rule.category }}</td>
+                    <td style="padding: 10px; color: var(--primary-color); font-weight: bold;">{{ rule.base_points }} pts</td>
+                    <td style="padding: 10px; color: #d63031;">-{{ rule.decrement_per_rank }} pts</td>
+                    <td style="padding: 10px; color: #00b894; font-weight: bold;">+{{ rule.exact_bonus }} pts</td>
+                    <td style="padding: 10px;">
+                        <form method="POST" action="{{ url_for('delete_scoring_rule', rule_id=rule.id) }}" style="display:inline;">
+                            <button type="submit" class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; background-color: #ff7675; color: white; border: none;">Supprimer</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="color: var(--text-muted); font-style: italic; margin-bottom: 2rem;">Aucune règle de barème enregistrée pour le moment.</p>
+        {% endif %}
+        
+        <h4>Ajouter une règle</h4>
+        <form method="POST" action="" class="custom-form" style="background: rgba(0,0,0,0.02); padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem;">
+            {{ scoring_rule_form.hidden_tag() }}
+            <div class="two-columns">
+                <div class="form-section">
+                    <div class="form-group">
+                        {{ scoring_rule_form.category.label }}
+                        {{ scoring_rule_form.category(class="form-control") }}
+                    </div>
+                </div>
+                <div class="form-section">
+                    <div class="form-group">
+                        {{ scoring_rule_form.base_points.label }}
+                        {{ scoring_rule_form.base_points(class="form-control", placeholder="Ex: 50") }}
+                    </div>
+                    <div class="form-group">
+                        {{ scoring_rule_form.decrement_per_rank.label }}
+                        {{ scoring_rule_form.decrement_per_rank(class="form-control", placeholder="Ex: 5") }}
+                    </div>
+                    <div class="form-group">
+                        {{ scoring_rule_form.exact_bonus.label }}
+                        {{ scoring_rule_form.exact_bonus(class="form-control", placeholder="Ex: 10") }}
+                    </div>
+                </div>
+            </div>
+            <div class="form-group submit-group" style="margin-top: 1rem;">
+                {{ scoring_rule_form.submit_rule(class="btn-primary full-width") }}
+            </div>
+        </form>
+    </div>
+
+    <hr style="border: 0; height: 1px; background: rgba(0,0,0,0.1); margin-bottom: 2rem;">
+    
+    <div style="margin-bottom: 3rem;">
         <h3>Indices existants</h3>
         {% if clues %}
-        <table class="display responsive nowrap" style="width:100%; border-collapse: collapse; text-align: left;">
+        <table id="cluesTable" class="display responsive nowrap" style="width:100%; border-collapse: collapse; text-align: left;">
             <thead>
                 <tr style="border-bottom: 2px solid var(--accent-secondary);">
                     <th style="padding: 10px;">Thème</th>
@@ -100,6 +258,7 @@
                     <td style="padding: 10px;">{{ clue.relation_link or '-' }}</td>
                     <td style="padding: 10px;">{{ clue.relative_name or '-' }}</td>
                     <td style="padding: 10px;">
+                        <a href="{{ url_for('edit_clue', clue_id=clue.id) }}" class="btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; text-decoration: none; margin-right: 5px;">Editer</a>
                         <form method="POST" action="{{ url_for('delete_clue', clue_id=clue.id) }}" style="display:inline;">
                             <button type="submit" class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; background-color: #ff7675; color: white; border: none;">Supprimer</button>
                         </form>
@@ -161,4 +320,23 @@
         </div>
     </form>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<!-- jQuery and DataTables JS -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#cluesTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json"
+            },
+            "pageLength": 10,
+            "responsive": true,
+            "order": [[ 0, "asc" ]]
+        });
+    });
+</script>
 {% endblock %}

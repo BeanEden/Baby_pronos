@@ -3,6 +3,7 @@
 {% block head %}
 <!-- DataTables CSS -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
 <style>
     /* Custom styles to match the glassmorphism theme */
     .table-container {
@@ -96,6 +97,7 @@
         <thead>
             <tr>
                 <th>Participant</th>
+                {% if config.show_category %}<th>Catégorie</th>{% endif %}
                 {% if config.show_dob %}<th>Date prévue</th>{% endif %}
                 {% if config.show_sex %}<th>Sexe</th>{% endif %}
                 {% if config.show_first_name %}<th>Prénom</th>{% endif %}
@@ -111,19 +113,54 @@
             {% for guess in guesses %}
             <tr class="{% if current_user.is_authenticated and guess.user_id == current_user.id %}my-guess-row{% endif %}">
                 <td>
-                    {{ guess.user.username }}
+                    {% if config.anonymous_mode %}
+                        {% if current_user.is_authenticated and guess.user_id == current_user.id %}
+                            {{ guess.user.username }}
+                        {% else %}
+                            Participant {{ loop.index }}
+                        {% endif %}
+                    {% else %}
+                        {{ guess.user.username }}
+                    {% endif %}
+                    
                     {% if current_user.is_authenticated and guess.user_id == current_user.id %}
                         <span class="badge" style="margin-left: 5px;">Moi</span>
                     {% endif %}
                 </td>
-                {% if config.show_dob %}<td>{{ guess.dob.strftime('%Y/%m/%d') if guess.dob else '-' }}</td>{% endif %}
-                {% if config.show_sex %}<td>{{ guess.sex or '-' }}</td>{% endif %}
-                {% if config.show_first_name %}<td>{{ guess.first_name or '-' }}</td>{% endif %}
-                {% if config.show_height %}<td>{{ guess.height or '-' }}</td>{% endif %}
-                {% if config.show_weight %}<td>{{ guess.weight or '-' }}</td>{% endif %}
-                {% if config.show_skin_color %}<td>{{ guess.skin_color or '-' }}</td>{% endif %}
-                {% if config.show_eye_color %}<td>{{ guess.eye_color or '-' }}</td>{% endif %}
-                {% if config.show_hair_color %}<td>{{ guess.hair_color or '-' }}</td>{% endif %}
+                {% if config.show_category %}<td>{{ guess.user.category or '-' }}</td>{% endif %}
+                {% set is_owner_or_admin = current_user.is_authenticated and (current_user.id == guess.user_id or current_user.is_admin) %}
+                
+                {% if config.show_dob %}
+                    <td>{% if config.table_show_dob or is_owner_or_admin %}{{ guess.dob.strftime('%Y/%m/%d') if guess.dob else '-' }}{% else %}<span style="opacity: 0.4;">🔒</span>{% endif %}</td>
+                {% endif %}
+                
+                {% if config.show_sex %}
+                    <td>{% if config.table_show_sex or is_owner_or_admin %}{{ guess.sex or '-' }}{% else %}<span style="opacity: 0.4;">🔒</span>{% endif %}</td>
+                {% endif %}
+                
+                {% if config.show_first_name %}
+                    <td>{% if config.table_show_first_name or is_owner_or_admin %}{{ guess.first_name or '-' }}{% else %}<span style="opacity: 0.4;">🔒</span>{% endif %}</td>
+                {% endif %}
+                
+                {% if config.show_height %}
+                    <td>{% if config.table_show_height or is_owner_or_admin %}{{ guess.height or '-' }}{% else %}<span style="opacity: 0.4;">🔒</span>{% endif %}</td>
+                {% endif %}
+                
+                {% if config.show_weight %}
+                    <td>{% if config.table_show_weight or is_owner_or_admin %}{{ guess.weight or '-' }}{% else %}<span style="opacity: 0.4;">🔒</span>{% endif %}</td>
+                {% endif %}
+                
+                {% if config.show_skin_color %}
+                    <td>{% if config.table_show_skin_color or is_owner_or_admin %}{{ guess.skin_color or '-' }}{% else %}<span style="opacity: 0.4;">🔒</span>{% endif %}</td>
+                {% endif %}
+                
+                {% if config.show_eye_color %}
+                    <td>{% if config.table_show_eye_color or is_owner_or_admin %}{{ guess.eye_color or '-' }}{% else %}<span style="opacity: 0.4;">🔒</span>{% endif %}</td>
+                {% endif %}
+                
+                {% if config.show_hair_color %}
+                    <td>{% if config.table_show_hair_color or is_owner_or_admin %}{{ guess.hair_color or '-' }}{% else %}<span style="opacity: 0.4;">🔒</span>{% endif %}</td>
+                {% endif %}
                 <td>
                     {% if current_user.is_authenticated and guess.user_id == current_user.id %}
                         <a href="{{ url_for('guess') }}" class="action-icon" title="Modifier mon pronostic">✏️</a>
@@ -140,6 +177,7 @@
 <!-- jQuery and DataTables JS -->
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
 <script>
     $(document).ready(function() {
         $('#guessesTable').DataTable({

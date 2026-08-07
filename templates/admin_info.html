@@ -25,6 +25,28 @@
 <div class="form-container" style="max-width: 900px;">
     <h2>Administration : Gérer les indices</h2>
     <p class="form-subtitle">Ces informations seront visibles par tous les participants pour les aider.</p>
+
+    <!-- Sauvegarde & Restauration -->
+    <div style="background: rgba(108, 92, 231, 0.05); border: 1px solid rgba(108, 92, 231, 0.2); padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem;">
+        <h3 style="margin-top: 0; color: #6c5ce7; display: flex; align-items: center; gap: 8px;">💾 Sauvegarde & Restauration</h3>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem;">Exportez tous les pronostics et utilisateurs au format CSV pour faire une sauvegarde, ou importez un fichier CSV pour restaurer vos données.</p>
+        
+        <div class="two-columns" style="align-items: center;">
+            <div class="form-section" style="text-align: center; border-right: 1px dashed rgba(0,0,0,0.1); padding-right: 1rem;">
+                <h4 style="margin-top: 0;">Exporter</h4>
+                <a href="{{ url_for('export_csv') }}" class="btn-primary" style="background: linear-gradient(45deg, #00b894, #55efc4); box-shadow: 0 4px 15px rgba(0, 184, 148, 0.3); padding: 0.8rem 1.5rem; font-size: 1rem;">⬇️ Télécharger la sauvegarde</a>
+            </div>
+            <div class="form-section" style="padding-left: 1rem;">
+                <h4 style="margin-top: 0;">Importer</h4>
+                <form action="{{ url_for('import_csv') }}" method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 10px;">
+                    <input type="file" name="csv_file" accept=".csv" required class="form-control" style="padding: 0.5rem;">
+                    <button type="submit" class="btn-primary" style="background: linear-gradient(45deg, #d63031, #ff7675); box-shadow: 0 4px 15px rgba(214, 48, 49, 0.3);">⬆️ Restaurer (Écrase les doublons)</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <hr style="border: 0; height: 1px; background: rgba(0,0,0,0.1); margin-bottom: 2rem;">
     
     <h3>Informations générales</h3>
     <form method="POST" action="" class="custom-form" style="margin-bottom: 2rem; background: rgba(255,255,255,0.4); padding: 1.5rem; border-radius: 12px;">

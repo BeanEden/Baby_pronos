@@ -565,6 +565,149 @@ def stats():
     actual_due_date = baby_info.due_date.strftime('%Y-%m-%d') if baby_info and baby_info.due_date else None
     return render_template('stats.html', stats_data=json.dumps(data), actual_due_date=actual_due_date)
 
+import csv
+from io import StringIO
+from flask import Response
+from datetime import datetime
+
+@app.route('/admin/export/csv')
+@login_required
+def export_csv():
+    if not current_user.is_admin:
+        flash('Accès refusé.', 'danger')
+        return redirect(url_for('index'))
+        
+    guesses = Guess.query.all()
+    
+    # Create CSV in memory
+    si = StringIO()
+    cw = csv.writer(si)
+    
+    # Write headers
+    cw.writerow([
+        'Nom', 'Categorie_Utilisateur', 'Date_Prevue', 'Sexe', 'Prenom', 
+        'Taille', 'Poids', 'Couleur_Peau', 'Couleur_Yeux', 'Couleur_Cheveux', 'Mot_De_Passe_Hash'
+    ])
+    
+    # Write data
+    for g in guesses:
+        cw.writerow([
+            g.user.username,
+            g.user.category or '',
+            g.dob.strftime('%Y-%m-%d') if g.dob else '',
+            g.sex,
+            g.first_name,
+            g.height,
+            g.weight,
+            g.skin_color or '',
+            g.eye_color or '',
+            g.hair_color or '',
+            g.user.password_hash
+        ])
+        
+    output = si.getvalue()
+    return Response(
+        output,
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment;filename=sauvegarde_pronostics.csv"}
+    )
+
+@app.route('/admin/import/csv', methods=['POST'])
+@login_required
+def import_csv():
+    if not current_user.is_admin:
+        flash('Accès refusé.', 'danger')
+        return redirect(url_for('index'))
+        
+    if 'csv_file' not in request.files:
+        flash('Aucun fichier envoyé.', 'danger')
+        return redirect(url_for('admin_info'))
+        
+    file = request.files['csv_file']
+    if file.filename == '':
+        flash('Aucun fichier sélectionné.', 'danger')
+        return redirect(url_for('admin_info'))
+        
+    if file and file.filename.endswith('.csv'):
+        stream = StringIO(file.stream.read().decode("UTF8"), newline=None)
+        csv_input = csv.reader(stream)
+        
+        headers = next(csv_input, None)
+        if not headers or headers[0] != 'Nom':
+            flash('Le format du CSV est invalide. Vérifiez que la première colonne est "Nom".', 'danger')
+            return redirect(url_for('admin_info'))
+            
+        success_count = 0
+        for row in csv_input:
+            if len(row) < 11:
+                continue
+                
+            username = row[0]
+            category = row[1]
+            dob_str = row[2]
+            sex = row[3]
+            first_name = row[4]
+            height_str = row[5]
+            weight_str = row[6]
+            skin = row[7]
+            eye = row[8]
+            hair = row[9]
+            pwd_hash = row[10]
+            
+            # Check or create User
+            user = User.query.filter_by(username=username).first()
+            if not user:
+                user = User(
+                    username=username,
+                    password_hash=pwd_hash or generate_password_hash('password123', method='pbkdf2:sha256'),
+                    category=category,
+                    is_admin=False
+                )
+                db.session.add(user)
+                db.session.commit()
+            
+            # Check or create Guess
+            guess = Guess.query.filter_by(user_id=user.id).first()
+            try:
+                dob = datetime.strptime(dob_str, '%Y-%m-%d').date() if dob_str else None
+                height = float(height_str) if height_str else 0.0
+                weight = float(weight_str) if weight_str else 0.0
+            except ValueError:
+                continue
+                
+            if guess:
+                guess.dob = dob
+                guess.sex = sex
+                guess.first_name = first_name
+                guess.height = height
+                guess.weight = weight
+                guess.skin_color = skin
+                guess.eye_color = eye
+                guess.hair_color = hair
+            else:
+                guess = Guess(
+                    user_id=user.id,
+                    dob=dob,
+                    sex=sex,
+                    first_name=first_name,
+                    height=height,
+                    weight=weight,
+                    skin_color=skin,
+                    eye_color=eye,
+                    hair_color=hair
+                )
+                db.session.add(guess)
+                
+            success_count += 1
+            
+        db.session.commit()
+        flash(f'Importation réussie ! {success_count} pronostics traités.', 'success')
+        return redirect(url_for('admin_info'))
+        
+    flash('Fichier invalide. Veuillez importer un fichier .csv', 'danger')
+    return redirect(url_for('admin_info'))
+
+
 
 @app.route('/admin/results', methods=['GET', 'POST'])
 @login_required

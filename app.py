@@ -211,6 +211,7 @@ def index():
     return render_template('home.html')
 
 @app.route('/table')
+@login_required
 def public_table():
     form_config = FormConfig.query.first()
     if not form_config:
@@ -270,6 +271,7 @@ def logout():
     return redirect(url_for('index'))
 
 @app.route('/info')
+@login_required
 def info():
     baby_info = BabyInfo.query.first()
     clues = Clue.query.all()
@@ -547,6 +549,7 @@ def guess():
         
     return render_template('guess_form.html', form=form, existing=bool(existing_guess), baby_info=baby_info, prenom_clues=prenom_clues, config=form_config, scoring_rules=scoring_rules)
 @app.route('/stats')
+@login_required
 def stats():
     form_config = FormConfig.query.first()
     if not form_config:
@@ -714,7 +717,184 @@ def import_csv():
     flash('Fichier invalide. Veuillez importer un fichier .csv', 'danger')
     return redirect(url_for('admin_info'))
 
+@app.route('/admin/export/clues/csv')
+@login_required
+def export_clues_csv():
+    if not current_user.is_admin:
+        flash('Accès refusé.', 'danger')
+        return redirect(url_for('index'))
+        
+    clues = Clue.query.all()
+    
+    si = StringIO()
+    cw = csv.writer(si)
+    
+    cw.writerow(['Theme', 'Valeur', 'Lien', 'Parent'])
+    
+    for c in clues:
+        cw.writerow([
+            c.theme,
+            c.value,
+            c.relation_link or '',
+            c.relative_name or ''
+        ])
+        
+    output = si.getvalue()
+    return Response(
+        output,
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment;filename=sauvegarde_indices.csv"}
+    )
 
+@app.route('/admin/import/clues/csv', methods=['POST'])
+@login_required
+def import_clues_csv():
+    if not current_user.is_admin:
+        flash('Accès refusé.', 'danger')
+        return redirect(url_for('index'))
+        
+    if 'csv_file' not in request.files:
+        flash('Aucun fichier envoyé.', 'danger')
+        return redirect(url_for('admin_info'))
+        
+    file = request.files['csv_file']
+    if file.filename == '':
+        flash('Aucun fichier sélectionné.', 'danger')
+        return redirect(url_for('admin_info'))
+        
+    if file and file.filename.endswith('.csv'):
+        stream = StringIO(file.stream.read().decode("UTF8"), newline=None)
+        csv_input = csv.reader(stream)
+        
+        headers = next(csv_input, None)
+        if not headers or headers[0] != 'Theme':
+            flash('Le format du CSV est invalide. Vérifiez que la première colonne est "Theme".', 'danger')
+            return redirect(url_for('admin_info'))
+            
+        success_count = 0
+        for row in csv_input:
+            if len(row) < 2:
+                continue
+                
+            theme = row[0].strip()
+            value = row[1].strip()
+            if not theme or not value:
+                continue
+                
+            relation_link = row[2].strip() if len(row) > 2 else ''
+            relative_name = row[3].strip() if len(row) > 3 else ''
+            
+            # Optionally check for duplicates
+            existing_clue = Clue.query.filter_by(theme=theme, value=value).first()
+            if not existing_clue:
+                new_clue = Clue(
+                    theme=theme,
+                    value=value,
+                    relation_link=relation_link,
+                    relative_name=relative_name
+                )
+                db.session.add(new_clue)
+                success_count += 1
+                
+        db.session.commit()
+        flash(f'Importation réussie ! {success_count} nouveaux indices ajoutés.', 'success')
+        return redirect(url_for('admin_info'))
+        
+    flash('Fichier invalide. Veuillez importer un fichier .csv', 'danger')
+    return redirect(url_for('admin_info'))
+
+
+
+@app.route('/admin/export/scoring/csv')
+@login_required
+def export_scoring_csv():
+    if not current_user.is_admin:
+        flash('Accès refusé.', 'danger')
+        return redirect(url_for('index'))
+        
+    rules = ScoringRule.query.all()
+    
+    si = StringIO()
+    cw = csv.writer(si)
+    
+    cw.writerow(['Categorie', 'Points_Max', 'Points_Perdus_Rang', 'Bonus_Exact'])
+    
+    for r in rules:
+        cw.writerow([
+            r.category,
+            r.base_points,
+            r.decrement_per_rank,
+            r.exact_bonus
+        ])
+        
+    output = si.getvalue()
+    return Response(
+        output,
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment;filename=sauvegarde_bareme.csv"}
+    )
+
+@app.route('/admin/import/scoring/csv', methods=['POST'])
+@login_required
+def import_scoring_csv():
+    if not current_user.is_admin:
+        flash('Accès refusé.', 'danger')
+        return redirect(url_for('index'))
+        
+    if 'csv_file' not in request.files:
+        flash('Aucun fichier envoyé.', 'danger')
+        return redirect(url_for('admin_info'))
+        
+    file = request.files['csv_file']
+    if file.filename == '':
+        flash('Aucun fichier sélectionné.', 'danger')
+        return redirect(url_for('admin_info'))
+        
+    if file and file.filename.endswith('.csv'):
+        stream = StringIO(file.stream.read().decode("UTF8"), newline=None)
+        csv_input = csv.reader(stream)
+        
+        headers = next(csv_input, None)
+        if not headers or headers[0] != 'Categorie':
+            flash('Le format du CSV est invalide. Vérifiez que la première colonne est "Categorie".', 'danger')
+            return redirect(url_for('admin_info'))
+            
+        success_count = 0
+        for row in csv_input:
+            if len(row) < 4:
+                continue
+                
+            category = row[0].strip()
+            if not category:
+                continue
+                
+            try:
+                base_points = int(row[1]) if row[1].strip() else 0
+                decrement_per_rank = int(row[2]) if row[2].strip() else 0
+                exact_bonus = int(row[3]) if row[3].strip() else 0
+            except ValueError:
+                continue
+            
+            # Delete existing rule for this category if any
+            existing_rule = ScoringRule.query.filter_by(category=category).first()
+            if existing_rule:
+                db.session.delete(existing_rule)
+                
+            new_rule = ScoringRule(
+                category=category,
+                base_points=base_points,
+                decrement_per_rank=decrement_per_rank,
+                exact_bonus=exact_bonus
+            )
+            db.session.add(new_rule)
+            success_count += 1
+                
+        db.session.commit()
+        flash(f'Importation réussie ! {success_count} règles de barème ajoutées/mises à jour.', 'success')
+        return redirect(url_for('admin_info'))
+        
+    flash('Fichier invalide. Veuillez importer un fichier .csv', 'danger')
+    return redirect(url_for('admin_info'))
 
 @app.route('/admin/results', methods=['GET', 'POST'])
 @login_required

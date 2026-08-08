@@ -195,6 +195,25 @@
     
     <div style="margin-bottom: 3rem;">
         <h3>Barème de points (Règles structurées)</h3>
+        
+        <!-- Sauvegarde & Restauration Barème -->
+        <div style="background: rgba(108, 92, 231, 0.05); border: 1px solid rgba(108, 92, 231, 0.2); padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem;">
+            <h4 style="margin-top: 0; color: #6c5ce7; display: flex; align-items: center; gap: 8px;">💾 Sauvegarde & Restauration du Barème</h4>
+            <div class="two-columns" style="align-items: center;">
+                <div class="form-section" style="text-align: center; border-right: 1px dashed rgba(0,0,0,0.1); padding-right: 1rem;">
+                    <h5 style="margin-top: 0;">Exporter</h5>
+                    <a href="{{ url_for('export_scoring_csv') }}" class="btn-primary" style="background: linear-gradient(45deg, #00b894, #55efc4); box-shadow: 0 4px 15px rgba(0, 184, 148, 0.3); padding: 0.8rem 1.5rem; font-size: 0.9rem;">⬇️ Télécharger le barème</a>
+                </div>
+                <div class="form-section" style="padding-left: 1rem;">
+                    <h5 style="margin-top: 0;">Importer</h5>
+                    <form action="{{ url_for('import_scoring_csv') }}" method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 10px;">
+                        <input type="file" name="csv_file" accept=".csv" required class="form-control" style="padding: 0.5rem;">
+                        <button type="submit" class="btn-primary" style="background: linear-gradient(45deg, #d63031, #ff7675); box-shadow: 0 4px 15px rgba(214, 48, 49, 0.3); font-size: 0.9rem;">⬆️ Restaurer (Écrase les doublons)</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
         {% if scoring_rules %}
         <table class="display responsive nowrap" style="width:100%; border-collapse: collapse; text-align: left; margin-bottom: 2rem;">
             <thead>
@@ -261,6 +280,25 @@
     
     <div style="margin-bottom: 3rem;">
         <h3>Indices existants</h3>
+        
+        <!-- Sauvegarde & Restauration Indices -->
+        <div style="background: rgba(108, 92, 231, 0.05); border: 1px solid rgba(108, 92, 231, 0.2); padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem;">
+            <h4 style="margin-top: 0; color: #6c5ce7; display: flex; align-items: center; gap: 8px;">💾 Sauvegarde & Restauration des Indices</h4>
+            <div class="two-columns" style="align-items: center;">
+                <div class="form-section" style="text-align: center; border-right: 1px dashed rgba(0,0,0,0.1); padding-right: 1rem;">
+                    <h5 style="margin-top: 0;">Exporter</h5>
+                    <a href="{{ url_for('export_clues_csv') }}" class="btn-primary" style="background: linear-gradient(45deg, #00b894, #55efc4); box-shadow: 0 4px 15px rgba(0, 184, 148, 0.3); padding: 0.8rem 1.5rem; font-size: 0.9rem;">⬇️ Télécharger les indices</a>
+                </div>
+                <div class="form-section" style="padding-left: 1rem;">
+                    <h5 style="margin-top: 0;">Importer</h5>
+                    <form action="{{ url_for('import_clues_csv') }}" method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 10px;">
+                        <input type="file" name="csv_file" accept=".csv" required class="form-control" style="padding: 0.5rem;">
+                        <button type="submit" class="btn-primary" style="background: linear-gradient(45deg, #d63031, #ff7675); box-shadow: 0 4px 15px rgba(214, 48, 49, 0.3); font-size: 0.9rem;">⬆️ Restaurer (Ignore les doublons)</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
         {% if clues %}
         <table id="cluesTable" class="display responsive nowrap" style="width:100%; border-collapse: collapse; text-align: left;">
             <thead>

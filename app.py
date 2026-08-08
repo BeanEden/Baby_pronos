@@ -111,7 +111,8 @@ class RegistrationForm(FlaskForm):
     submit = SubmitField('S\'inscrire')
 
 class LoginForm(FlaskForm):
-    username = StringField('Prénom Nom', validators=[DataRequired()])
+    first_name = StringField('Prénom', validators=[DataRequired()])
+    last_name = StringField('Nom', validators=[DataRequired()])
     password = PasswordField('Mot de passe', validators=[DataRequired()])
     submit = SubmitField('Se connecter')
 
@@ -252,7 +253,8 @@ def login():
         return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
+        username_val = f"{form.first_name.data.strip()} {form.last_name.data.strip()}"
+        user = User.query.filter_by(username=username_val).first()
         if user and check_password_hash(user.password_hash, form.password.data):
             login_user(user)
             flash('Connexion réussie.', 'success')

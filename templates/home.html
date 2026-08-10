@@ -26,10 +26,10 @@
             <span style="font-size: 0.9rem; opacity: 0.8; margin-top: 0.5rem; text-align: center;">Tentez votre chance !</span>
         </a>
 
-        <a href="{{ url_for('info') }}" class="btn-secondary" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; border-radius: 12px; text-decoration: none; transition: transform 0.2s;">
-            <span style="font-size: 2.5rem; margin-bottom: 1rem;">🔍</span>
+        <a href="{{ url_for('info') }}" class="btn-secondary" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; border-radius: 12px; text-decoration: none; transition: transform 0.2s; background-color: #ff9f43; color: white;">
+            <span style="font-size: 2.5rem; margin-bottom: 1rem;">💡</span>
             <span style="font-size: 1.2rem; font-weight: bold;">Voir les indices</span>
-            <span style="font-size: 0.9rem; opacity: 0.8; margin-top: 0.5rem; text-align: center;">Besoin d'aide pour choisir ?</span>
+            <span style="font-size: 0.9rem; opacity: 0.9; margin-top: 0.5rem; text-align: center;">Besoin d'aide pour choisir ?</span>
         </a>
 
         {% if config.enable_table_page or (current_user.is_authenticated and current_user.is_admin) %}

@@ -139,7 +139,12 @@
                 {% endif %}
                 
                 {% if config.show_first_name %}
-                    <td>{% if config.table_show_first_name or is_owner_or_admin %}{{ guess.first_name or '-' }}{% else %}<span style="opacity: 0.4;">🔒</span>{% endif %}</td>
+                    <td>
+                        {% if config.table_show_first_name or is_owner_or_admin %}
+                            {% set names = [guess.first_name, guess.first_name_2, guess.first_name_3] | reject("none") | reject("==", "") | list %}
+                            {{ names | join(', ') if names else '-' }}
+                        {% else %}<span style="opacity: 0.4;">🔒</span>{% endif %}
+                    </td>
                 {% endif %}
                 
                 {% if config.show_height %}

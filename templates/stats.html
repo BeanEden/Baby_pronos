@@ -492,17 +492,20 @@
         let nameCountsByCat = {};
         
         filteredData.forEach(d => {
-            if (d.first_name && d.first_name.trim() !== '') {
-                // capitalize first letter for consistency
-                let name = d.first_name.trim();
-                name = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
-                
-                nameCounts[name] = (nameCounts[name] || 0) + 1;
-                
-                if (!nameCountsByCat[name]) nameCountsByCat[name] = {};
-                if (d.category) {
-                    nameCountsByCat[name][d.category] = (nameCountsByCat[name][d.category] || 0) + 1;
-                }
+            if (d.first_names && d.first_names.length > 0) {
+                d.first_names.forEach(fn => {
+                    if (fn && fn.trim() !== '') {
+                        let name = fn.trim();
+                        name = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+                        
+                        nameCounts[name] = (nameCounts[name] || 0) + 1;
+                        
+                        if (!nameCountsByCat[name]) nameCountsByCat[name] = {};
+                        if (d.category) {
+                            nameCountsByCat[name][d.category] = (nameCountsByCat[name][d.category] || 0) + 1;
+                        }
+                    }
+                });
             }
         });
 

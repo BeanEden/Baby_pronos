@@ -131,6 +131,13 @@
                 <div class="form-group" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px; font-weight: bold; color: var(--primary-color);">
                     {{ config_form.enable_stats_page() }} {{ config_form.enable_stats_page.label }}
                 </div>
+                <hr style="margin: 1rem 0; border: 0; height: 1px; background: rgba(0,0,0,0.1);">
+                <div class="form-group" style="margin-top: 1rem;">
+                    <div style="font-weight: bold; margin-bottom: 0.5rem; color: #d63031;">
+                        {{ config_form.guess_deadline.label }}
+                    </div>
+                    {{ config_form.guess_deadline(class="form-control") }}
+                </div>
             </div>
             <div class="form-section">
                 <div class="form-group">

@@ -5,6 +5,13 @@
     <h2>{% if existing %}Modifier{% else %}Faire{% endif %} votre pronostic</h2>
     <p class="form-subtitle">Laissez-vous guider par votre intuition !</p>
     
+    {% if config.guess_deadline %}
+    <div style="background: rgba(214, 48, 49, 0.1); padding: 1rem; border-radius: 8px; border: 2px dashed #ff7675; margin-bottom: 1.5rem; text-align: center;">
+        <h3 style="margin-top: 0; color: #d63031;">⏰ Attention, date butoir !</h3>
+        <p style="margin-bottom: 0;">Vous avez jusqu'au <strong>{{ config.guess_deadline.strftime('%d/%m/%Y à %H:%M') }}</strong> pour participer ou modifier votre pronostic.</p>
+    </div>
+    {% endif %}
+    
     {% if config.prize_text %}
     <div style="background: rgba(255, 215, 0, 0.2); padding: 1rem; border-radius: 8px; border: 2px dashed #eccc68; margin-bottom: 1.5rem; text-align: center;">
         <h3 style="margin-top: 0; color: #d35400;">🏆 À gagner</h3>
@@ -59,12 +66,35 @@
             {% endif %}
             {% if config.show_first_name %}
             <div class="form-group">
-                {{ form.first_name.label }}
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    {{ form.first_name(class="form-control", placeholder="Ex: Lucas, Emma...") }}
+                <label style="font-weight: bold; color: var(--primary-color);">Prénoms (Jusqu'à 3)</label>
+                <p style="font-size: 0.85rem; color: #d63031; margin-top: 5px; margin-bottom: 10px;">Attention : Si vous trouvez le bon prénom, vos points seront divisés par le nombre de prénoms proposés !</p>
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                    {{ form.first_name(class="form-control", placeholder="Prénom 1 (Ex: Lucas)") }}
                     {% if config.show_hints and prenom_clues %}
                     <select class="form-control" style="width: auto; max-width: 150px; font-size: 0.85rem;" onchange="if(this.value) document.getElementById('{{ form.first_name.id }}').value = this.value">
-                        <option value="">Prénoms de la famille</option>
+                        <option value="">Indices...</option>
+                        {% for clue in prenom_clues %}
+                        <option value="{{ clue.value }}">{{ clue.value }}</option>
+                        {% endfor %}
+                    </select>
+                    {% endif %}
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                    {{ form.first_name_2(class="form-control", placeholder="Prénom 2 (Optionnel)") }}
+                    {% if config.show_hints and prenom_clues %}
+                    <select class="form-control" style="width: auto; max-width: 150px; font-size: 0.85rem;" onchange="if(this.value) document.getElementById('{{ form.first_name_2.id }}').value = this.value">
+                        <option value="">Indices...</option>
+                        {% for clue in prenom_clues %}
+                        <option value="{{ clue.value }}">{{ clue.value }}</option>
+                        {% endfor %}
+                    </select>
+                    {% endif %}
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    {{ form.first_name_3(class="form-control", placeholder="Prénom 3 (Optionnel)") }}
+                    {% if config.show_hints and prenom_clues %}
+                    <select class="form-control" style="width: auto; max-width: 150px; font-size: 0.85rem;" onchange="if(this.value) document.getElementById('{{ form.first_name_3.id }}').value = this.value">
+                        <option value="">Indices...</option>
                         {% for clue in prenom_clues %}
                         <option value="{{ clue.value }}">{{ clue.value }}</option>
                         {% endfor %}

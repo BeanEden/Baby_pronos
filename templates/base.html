@@ -14,7 +14,7 @@
             <a href="{{ url_for('index') }}">👶 Pronostics Bébé</a>
         </div>
         <div class="nav-links">
-            <a href="{{ url_for('info') }}" class="nav-item">Indices</a>
+            <a href="{{ url_for('info') }}" class="nav-item" style="font-weight: bold; color: #ff9f43;">💡 Indices</a>
             {% if config.enable_table_page or (current_user.is_authenticated and current_user.is_admin) %}
             <a href="{{ url_for('public_table') }}" class="nav-item">Tableau</a>
             {% endif %}

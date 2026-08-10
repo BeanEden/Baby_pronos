@@ -25,6 +25,7 @@
                 {% if current_user.is_admin %}
                     <a href="{{ url_for('admin_info') }}" class="nav-item">Admin</a>
                     <a href="{{ url_for('admin_results') }}" class="nav-item" style="color: #6c5ce7; font-weight: bold;">Calculateur</a>
+                    <a href="{{ url_for('admin_simulator') }}" class="nav-item" style="color: #00b894; font-weight: bold;">Simulateur</a>
                 {% endif %}
                 <span class="nav-item">Bonjour, {{ current_user.username }}</span>
                 <a href="{{ url_for('guess') }}" class="nav-item btn-primary">Mon Pronostic</a>

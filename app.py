@@ -1039,6 +1039,70 @@ def admin_results():
 
     return render_template('results.html', form=form, results=results)
 
+@app.route('/admin/simulator')
+@login_required
+def admin_simulator():
+    if not current_user.is_admin:
+        flash('Accès refusé.', 'danger')
+        return redirect(url_for('index'))
+        
+    rules_raw = ScoringRule.query.all()
+    rules = {r.category: r for r in rules_raw}
+    
+    profiles = [
+        {"name": "Le Devin", "description": "Tout juste, 1 prénom", "ranks": {"Prénom": [True, 1], "Sexe": True, "Taille": 1, "Poids": 1, "Date prévue": 1, "Couleur de peau": True, "Couleur des yeux": True, "Couleur des cheveux": True}},
+        {"name": "Le Pragmatique", "description": "Prénom faux, très bon sur les nombres", "ranks": {"Prénom": [False, 1], "Sexe": True, "Taille": 2, "Poids": 2, "Date prévue": 2, "Couleur de peau": False, "Couleur des yeux": False, "Couleur des cheveux": False}},
+        {"name": "L'Hésitant", "description": "Bon prénom mais 3 propositions, nombres moyens", "ranks": {"Prénom": [True, 3], "Sexe": True, "Taille": 5, "Poids": 5, "Date prévue": 5, "Couleur de peau": False, "Couleur des yeux": False, "Couleur des cheveux": False}},
+        {"name": "Le Spécialiste", "description": "Prénom juste (1 choix), tout le reste faux ou loin", "ranks": {"Prénom": [True, 1], "Sexe": False, "Taille": 10, "Poids": 10, "Date prévue": 10, "Couleur de peau": False, "Couleur des yeux": False, "Couleur des cheveux": False}},
+        {"name": "Le Malchanceux", "description": "Tout faux, très loin", "ranks": {"Prénom": [False, 1], "Sexe": False, "Taille": 20, "Poids": 20, "Date prévue": 20, "Couleur de peau": False, "Couleur des yeux": False, "Couleur des cheveux": False}},
+    ]
+    
+    results = []
+    categories = list(rules.keys())
+    
+    for prof in profiles:
+        prof_res = {"name": prof["name"], "description": prof["description"], "total": 0, "details": {}, "category_ranks": {}}
+        for cat in categories:
+            rule = rules[cat]
+            score = 0
+            cat_rank_str = ""
+            if cat == "Prénom":
+                if prof["ranks"].get(cat, [False, 1])[0]:
+                    nb = prof["ranks"].get(cat, [True, 1])[1]
+                    score = (rule.base_points + rule.exact_bonus) / nb
+                    cat_rank_str = f"Trouvé ({nb} choix)"
+                else:
+                    cat_rank_str = "Faux"
+            elif cat in ["Sexe", "Couleur de peau", "Couleur des yeux", "Couleur des cheveux"]:
+                if prof["ranks"].get(cat, False):
+                    score = rule.base_points + rule.exact_bonus
+                    cat_rank_str = "Trouvé"
+                else:
+                    cat_rank_str = "Faux"
+            else: # Ranked (Taille, Poids, Date prévue)
+                rank = prof["ranks"].get(cat, 20)
+                points = rule.base_points - ((rank - 1) * rule.decrement_per_rank)
+                score = max(0, points)
+                if rank == 1:
+                    score += rule.exact_bonus
+                cat_rank_str = f"{rank}er" if rank == 1 else f"{rank}ème"
+            
+            prof_res["details"][cat] = score
+            prof_res["category_ranks"][cat] = cat_rank_str
+            prof_res["total"] += score
+            
+        prof_res["avg_rank"] = sum([prof["ranks"].get("Taille", 20), prof["ranks"].get("Poids", 20), prof["ranks"].get("Date prévue", 20)]) / 3.0
+        results.append(prof_res)
+        
+    # Assign overall rank based on total score
+    results.sort(key=lambda x: x["total"], reverse=True)
+    for idx, r in enumerate(results):
+        r["rank"] = idx + 1
+        
+    import json
+    return render_template('admin_simulator.html', results=results, results_json=json.dumps(results), categories=categories)
+
+
 
 with app.app_context():
     db.create_all()

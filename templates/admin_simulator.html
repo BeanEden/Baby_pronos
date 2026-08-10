@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+    .simulator-container {
+        padding: 2rem;
+    }
+    .profile-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    .profile-card h3 {
+        margin-top: 0;
+        color: var(--primary-color);
+    }
+    table.sim-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+    table.sim-table th, table.sim-table td {
+        padding: 10px;
+        border: 1px solid #e1e1e1;
+        text-align: center;
+    }
+    table.sim-table th {
+        background-color: var(--accent-secondary);
+        color: var(--primary-color);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="simulator-container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div>
+            <h1 style="margin-bottom: 0.5rem;">🎮 Simulateur de Barème</h1>
+            <p style="color: var(--text-muted); margin-top: 0;">Visualisez l'impact de vos règles de comptabilisation sur différents profils types.</p>
+        </div>
+        <div>
+            <a href="{{ url_for('admin_info') }}" class="btn-secondary">Retour à l'Admin</a>
+        </div>
+    </div>
+
+    <!-- Profiles Detail -->
+    <h3 style="margin-top: 0;">Détail par Profil</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        {% for prof in results %}
+        <div class="profile-card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <h3 style="margin-bottom: 0.5rem;">{{ prof.name }}</h3>
+                <div style="background-color: var(--primary-color); color: white; padding: 4px 12px; border-radius: 20px; font-weight: bold; text-align: right;">
+                    {{ prof.total|round(1) }} pts<br>
+                    <span style="font-size: 0.75rem; font-weight: normal;">Rang : {{ prof.rank }} / 5</span>
+                </div>
+            </div>
+            <p style="font-size: 0.9rem; color: var(--text-muted); font-style: italic; margin-top: 0;">"{{ prof.description }}"</p>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0;">Rang moyen (Taille/Poids/Date) : {{ prof.avg_rank|round(1) }}</p>
+            
+            <table class="sim-table" style="font-size: 0.85rem;">
+                <thead>
+                    <tr>
+                        <th>Catégorie</th>
+                        <th>Points</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cat in categories %}
+                    <tr>
+                        <td style="text-align: left; font-weight: 500;">
+                            {{ cat }}<br>
+                            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">{{ prof.category_ranks[cat] }}</span>
+                        </td>
+                        <td style="color: {% if prof.details[cat] > 0 %}#00b894{% else %}#d63031{% endif %}; font-weight: bold; vertical-align: middle;">
+                            {{ prof.details[cat]|round(1) }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Charts -->
+    <h3 style="margin-top: 2rem;">Comparatif des Scores Totaux</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+        <div class="profile-card">
+            <h4>Radar des Catégories</h4>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Comparaison de la répartition des points par catégorie.</p>
+            <div id="chart-radar" style="width: 100%; height: 400px;"></div>
+        </div>
+        
+        <div class="profile-card">
+            <h4>Points vs Rang Moyen</h4>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Relation entre les points totaux et le rang moyen obtenu.</p>
+            <div id="chart-line" style="width: 100%; height: 400px;"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        let resultsData = {{ results_json | safe }};
+        let categories = {{ categories | tojson | safe }};
+        
+        // --- Radar Chart ---
+        let radarDom = document.getElementById('chart-radar');
+        let radarChart = echarts.init(radarDom);
+        
+        let maxPoints = {};
+        categories.forEach(cat => maxPoints[cat] = 0);
+        resultsData.forEach(r => {
+            categories.forEach(cat => {
+                if (r.details[cat] > maxPoints[cat]) maxPoints[cat] = r.details[cat];
+            });
+        });
+        
+        let radarIndicator = categories.map(cat => {
+            return { name: cat, max: Math.max(maxPoints[cat] * 1.2, 10) };
+        });
+        
+        let radarSeriesData = resultsData.map(r => {
+            return {
+                value: categories.map(cat => r.details[cat] || 0),
+                name: r.name
+            };
+        });
+
+        let radarOption = {
+            tooltip: { trigger: 'item' },
+            legend: { top: 'bottom', data: resultsData.map(r => r.name) },
+            radar: {
+                indicator: radarIndicator,
+                radius: '60%'
+            },
+            series: [{
+                name: 'Profils',
+                type: 'radar',
+                data: radarSeriesData,
+                symbolSize: 6,
+                itemStyle: { borderWidth: 2 }
+            }],
+            color: ['#6c5ce7', '#00b894', '#fdcb6e', '#e17055', '#d63031']
+        };
+        radarChart.setOption(radarOption);
+        
+        // --- Line Chart (Points vs Avg Rank) ---
+        let lineDom = document.getElementById('chart-line');
+        let lineChart = echarts.init(lineDom);
+        
+        // Sort data by average rank (X axis)
+        let sortedForLine = [...resultsData].sort((a, b) => a.avg_rank - b.avg_rank);
+        
+        let lineOption = {
+            tooltip: {
+                trigger: 'axis',
+                formatter: function (params) {
+                    let data = params[0].data;
+                    return `<b>${data.name}</b><br/>Rang moyen : ${data.value[0].toFixed(1)}<br/>Points totaux : ${data.value[1].toFixed(1)}`;
+                }
+            },
+            grid: { left: '10%', right: '10%', bottom: '15%', containLabel: true },
+            xAxis: {
+                type: 'value',
+                name: 'Rang Moyen\n(1 = Meilleur)',
+                nameLocation: 'middle',
+                nameGap: 30,
+                inverse: true // So rank 1 is on the right or left? Let's make left = 1 (better)
+            },
+            yAxis: {
+                type: 'value',
+                name: 'Points Totaux'
+            },
+            series: [{
+                type: 'line',
+                smooth: true,
+                symbolSize: 10,
+                data: sortedForLine.map(r => {
+                    return {
+                        name: r.name,
+                        value: [r.avg_rank, r.total]
+                    };
+                }),
+                itemStyle: { color: '#0984e3' },
+                lineStyle: { width: 3 },
+                label: {
+                    show: true,
+                    position: 'top',
+                    formatter: function(params) {
+                        return params.data.name;
+                    }
+                }
+            }]
+        };
+        // Fix inverse logic: we want rank 1 on the left
+        lineOption.xAxis.inverse = false; 
+        
+        lineChart.setOption(lineOption);
+        
+        window.addEventListener('resize', function() {
+            radarChart.resize();
+            lineChart.resize();
+        });
+    });
+</script>
+{% endblock %}

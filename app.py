@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, DateField, SelectField, FloatField, TextAreaField, BooleanField, IntegerField, DateTimeLocalField
+from wtforms import StringField, PasswordField, SubmitField, DateField, SelectField, FloatField, TextAreaField, BooleanField, IntegerField, DateTimeLocalField, TimeField
 from wtforms.validators import DataRequired, EqualTo, Optional
 from datetime import datetime
 
@@ -34,6 +34,7 @@ class User(UserMixin, db.Model):
 class BabyInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     due_date = db.Column(db.Date, nullable=True)
+    time_of_birth = db.Column(db.Time, nullable=True)
     sex = db.Column(db.String(50), nullable=True)
 
 class Clue(db.Model):
@@ -54,10 +55,18 @@ class Guess(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     dob = db.Column(db.Date, nullable=False)
+    time_of_birth = db.Column(db.Time, nullable=True)
     sex = db.Column(db.String(50), nullable=False)
     first_name = db.Column(db.String(150), nullable=False)
     first_name_2 = db.Column(db.String(150), nullable=True)
     first_name_3 = db.Column(db.String(150), nullable=True)
+    first_name_4 = db.Column(db.String(150), nullable=True)
+    first_name_5 = db.Column(db.String(150), nullable=True)
+    first_name_6 = db.Column(db.String(150), nullable=True)
+    first_name_7 = db.Column(db.String(150), nullable=True)
+    first_name_8 = db.Column(db.String(150), nullable=True)
+    first_name_9 = db.Column(db.String(150), nullable=True)
+    first_name_10 = db.Column(db.String(150), nullable=True)
     height = db.Column(db.Float, nullable=False) # cm
     weight = db.Column(db.Float, nullable=False) # kg
     skin_color = db.Column(db.String(100), nullable=True)
@@ -67,6 +76,7 @@ class Guess(db.Model):
 class FormConfig(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     show_dob = db.Column(db.Boolean, default=True)
+    show_time = db.Column(db.Boolean, default=True)
     show_sex = db.Column(db.Boolean, default=True)
     show_first_name = db.Column(db.Boolean, default=True)
     show_height = db.Column(db.Boolean, default=True)
@@ -75,6 +85,7 @@ class FormConfig(db.Model):
     show_eye_color = db.Column(db.Boolean, default=True)
     show_hair_color = db.Column(db.Boolean, default=True)
     show_hints = db.Column(db.Boolean, default=True)
+    max_names = db.Column(db.Integer, default=3)
     guess_deadline = db.Column(db.DateTime, nullable=True)
     
     lock_sex = db.Column(db.Boolean, default=False)
@@ -86,6 +97,7 @@ class FormConfig(db.Model):
     
     # Table visibility toggles
     table_show_dob = db.Column(db.Boolean, default=True)
+    table_show_time = db.Column(db.Boolean, default=True)
     table_show_sex = db.Column(db.Boolean, default=True)
     table_show_first_name = db.Column(db.Boolean, default=True)
     table_show_height = db.Column(db.Boolean, default=True)
@@ -121,13 +133,21 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Se connecter')
 
 class GuessForm(FlaskForm):
-    dob = DateField('Date de naissance (estimée)', format='%Y-%m-%d', validators=[Optional()])
+    dob = DateField('Date de naissance (estimée)', format='%Y-%m-%d', validators=[DataRequired(message="La date de naissance est obligatoire")])
+    time_of_birth = TimeField('Heure (optionnel)', format='%H:%M', validators=[Optional()])
     sex = SelectField('Sexe', choices=[('Fille', 'Fille'), ('Garçon', 'Garçon'), ('Surprise', 'Surprise')], validators=[Optional()])
-    first_name = StringField('Prénom 1', validators=[Optional()])
+    first_name = StringField('Prénom 1', validators=[DataRequired(message="Au moins un prénom est obligatoire")])
     first_name_2 = StringField('Prénom 2 (optionnel)', validators=[Optional()])
     first_name_3 = StringField('Prénom 3 (optionnel)', validators=[Optional()])
-    height = FloatField('Taille (cm)', validators=[Optional()])
-    weight = FloatField('Poids (kg)', validators=[Optional()])
+    first_name_4 = StringField('Prénom 4 (optionnel)', validators=[Optional()])
+    first_name_5 = StringField('Prénom 5 (optionnel)', validators=[Optional()])
+    first_name_6 = StringField('Prénom 6 (optionnel)', validators=[Optional()])
+    first_name_7 = StringField('Prénom 7 (optionnel)', validators=[Optional()])
+    first_name_8 = StringField('Prénom 8 (optionnel)', validators=[Optional()])
+    first_name_9 = StringField('Prénom 9 (optionnel)', validators=[Optional()])
+    first_name_10 = StringField('Prénom 10 (optionnel)', validators=[Optional()])
+    height = FloatField('Taille (cm)', validators=[DataRequired(message="La taille est obligatoire")])
+    weight = FloatField('Poids (kg)', validators=[DataRequired(message="Le poids est obligatoire")])
     skin_color = SelectField('Couleur de peau (optionnel)', choices=[('', '---'), ('Blanche', 'Blanche'), ('Mate', 'Mate'), ('Noire', 'Noire'), ('Métissée', 'Métissée'), ('Autre', 'Autre')], validators=[Optional()])
     eye_color = SelectField('Couleur des yeux (optionnel)', choices=[('', '---'), ('Marrons', 'Marrons'), ('Bleus', 'Bleus'), ('Verts', 'Verts'), ('Noisette', 'Noisette'), ('Gris', 'Gris'), ('Autre', 'Autre')], validators=[Optional()])
     hair_color = SelectField('Couleur des cheveux (optionnel)', choices=[('', '---'), ('Bruns', 'Bruns'), ('Châtains', 'Châtains'), ('Blonds', 'Blonds'), ('Roux', 'Roux'), ('Noirs', 'Noirs'), ('Chauve', 'Chauve (sans cheveux)'), ('Autre', 'Autre')], validators=[Optional()])
@@ -142,6 +162,7 @@ class ClueForm(FlaskForm):
 
 class DueDateForm(FlaskForm):
     due_date = DateField('Terme prévu', format='%Y-%m-%d', validators=[Optional()])
+    due_time = TimeField('Heure', format='%H:%M', validators=[Optional()])
     sex = SelectField('Sexe du bébé', choices=[('', '---'), ('Fille', 'Fille'), ('Garçon', 'Garçon')], validators=[Optional()])
     submit_date = SubmitField('Mettre à jour les informations')
 
@@ -163,6 +184,7 @@ class ScoringRuleForm(FlaskForm):
 
 class CalculatorForm(FlaskForm):
     dob = DateField('Date de naissance réelle', format='%Y-%m-%d', validators=[DataRequired()])
+    time_of_birth = TimeField('Heure de naissance réelle (optionnel)', format='%H:%M', validators=[Optional()])
     sex = SelectField('Sexe réel', choices=[('Fille', 'Fille'), ('Garçon', 'Garçon')], validators=[DataRequired()])
     first_name = StringField('Prénom réel', validators=[DataRequired()])
     height = FloatField('Taille réelle (cm)', validators=[DataRequired()])
@@ -174,6 +196,7 @@ class CalculatorForm(FlaskForm):
 
 class FormConfigForm(FlaskForm):
     show_dob = BooleanField('Date de naissance')
+    show_time = BooleanField('Heure')
     show_sex = BooleanField('Sexe')
     show_first_name = BooleanField('Prénom')
     show_height = BooleanField('Taille')
@@ -182,6 +205,7 @@ class FormConfigForm(FlaskForm):
     show_eye_color = BooleanField('Couleur des yeux')
     show_hair_color = BooleanField('Couleur des cheveux')
     show_hints = BooleanField('Afficher les indices')
+    max_names = IntegerField('Nombre maximum de prénoms autorisés (1 à 10)', default=3)
     lock_sex = BooleanField('Bloquer le Sexe (force la valeur définie en haut)')
     anonymous_mode = BooleanField('Mode anonyme (masquer les noms)')
     show_category = BooleanField('Afficher la catégorie des participants')
@@ -190,6 +214,7 @@ class FormConfigForm(FlaskForm):
     
     # New table visibility fields
     table_show_dob = BooleanField('Date de naissance')
+    table_show_time = BooleanField('Heure')
     table_show_sex = BooleanField('Sexe')
     table_show_first_name = BooleanField('Prénom')
     table_show_height = BooleanField('Taille')
@@ -348,6 +373,7 @@ def admin_info():
         
     if date_form.submit_date.data and date_form.validate_on_submit():
         baby_info.due_date = date_form.due_date.data
+        baby_info.time_of_birth = date_form.due_time.data
         baby_info.sex = date_form.sex.data
         db.session.commit()
         flash('Les informations ont été mises à jour.', 'success')
@@ -367,6 +393,7 @@ def admin_info():
         
     if config_form.submit_config.data and config_form.validate_on_submit():
         form_config.show_dob = config_form.show_dob.data
+        form_config.show_time = config_form.show_time.data
         form_config.show_sex = config_form.show_sex.data
         form_config.show_first_name = config_form.show_first_name.data
         form_config.show_height = config_form.show_height.data
@@ -375,6 +402,7 @@ def admin_info():
         form_config.show_eye_color = config_form.show_eye_color.data
         form_config.show_hair_color = config_form.show_hair_color.data
         form_config.show_hints = config_form.show_hints.data
+        form_config.max_names = config_form.max_names.data or 3
         form_config.lock_sex = config_form.lock_sex.data
         form_config.anonymous_mode = config_form.anonymous_mode.data
         form_config.show_category = config_form.show_category.data
@@ -382,6 +410,7 @@ def admin_info():
         form_config.rules_text = config_form.rules_text.data
         
         form_config.table_show_dob = config_form.table_show_dob.data
+        form_config.table_show_time = config_form.table_show_time.data
         form_config.table_show_sex = config_form.table_show_sex.data
         form_config.table_show_first_name = config_form.table_show_first_name.data
         form_config.table_show_height = config_form.table_show_height.data
@@ -402,9 +431,11 @@ def admin_info():
     # Populate forms
     if request.method == 'GET':
         date_form.due_date.data = baby_info.due_date
+        date_form.due_time.data = baby_info.time_of_birth
         date_form.sex.data = baby_info.sex
         
         config_form.show_dob.data = form_config.show_dob
+        config_form.show_time.data = form_config.show_time
         config_form.show_sex.data = form_config.show_sex
         config_form.show_first_name.data = form_config.show_first_name
         config_form.show_height.data = form_config.show_height
@@ -413,6 +444,7 @@ def admin_info():
         config_form.show_eye_color.data = form_config.show_eye_color
         config_form.show_hair_color.data = form_config.show_hair_color
         config_form.show_hints.data = form_config.show_hints
+        config_form.max_names.data = form_config.max_names
         config_form.lock_sex.data = form_config.lock_sex
         config_form.anonymous_mode.data = form_config.anonymous_mode
         config_form.show_category.data = form_config.show_category
@@ -420,6 +452,7 @@ def admin_info():
         config_form.rules_text.data = form_config.rules_text
         
         config_form.table_show_dob.data = form_config.table_show_dob
+        config_form.table_show_time.data = form_config.table_show_time
         config_form.table_show_sex.data = form_config.table_show_sex
         config_form.table_show_first_name.data = form_config.table_show_first_name
         config_form.table_show_height.data = form_config.table_show_height
@@ -516,10 +549,18 @@ def guess():
         if existing_guess:
             # Update existing
             existing_guess.dob = form.dob.data
+            existing_guess.time_of_birth = form.time_of_birth.data
             existing_guess.sex = final_sex
             existing_guess.first_name = form.first_name.data
             existing_guess.first_name_2 = form.first_name_2.data
             existing_guess.first_name_3 = form.first_name_3.data
+            existing_guess.first_name_4 = form.first_name_4.data
+            existing_guess.first_name_5 = form.first_name_5.data
+            existing_guess.first_name_6 = form.first_name_6.data
+            existing_guess.first_name_7 = form.first_name_7.data
+            existing_guess.first_name_8 = form.first_name_8.data
+            existing_guess.first_name_9 = form.first_name_9.data
+            existing_guess.first_name_10 = form.first_name_10.data
             existing_guess.height = form.height.data
             existing_guess.weight = form.weight.data
             existing_guess.skin_color = form.skin_color.data
@@ -531,10 +572,18 @@ def guess():
             new_guess = Guess(
                 user_id=current_user.id,
                 dob=form.dob.data,
+                time_of_birth=form.time_of_birth.data,
                 sex=final_sex,
                 first_name=form.first_name.data,
                 first_name_2=form.first_name_2.data,
                 first_name_3=form.first_name_3.data,
+                first_name_4=form.first_name_4.data,
+                first_name_5=form.first_name_5.data,
+                first_name_6=form.first_name_6.data,
+                first_name_7=form.first_name_7.data,
+                first_name_8=form.first_name_8.data,
+                first_name_9=form.first_name_9.data,
+                first_name_10=form.first_name_10.data,
                 height=form.height.data,
                 weight=form.weight.data,
                 skin_color=form.skin_color.data,
@@ -550,10 +599,18 @@ def guess():
     elif request.method == 'GET' and existing_guess:
         # Populate form with existing data
         form.dob.data = existing_guess.dob
+        form.time_of_birth.data = existing_guess.time_of_birth
         form.sex.data = existing_guess.sex
         form.first_name.data = existing_guess.first_name
         form.first_name_2.data = existing_guess.first_name_2
         form.first_name_3.data = existing_guess.first_name_3
+        form.first_name_4.data = existing_guess.first_name_4
+        form.first_name_5.data = existing_guess.first_name_5
+        form.first_name_6.data = existing_guess.first_name_6
+        form.first_name_7.data = existing_guess.first_name_7
+        form.first_name_8.data = existing_guess.first_name_8
+        form.first_name_9.data = existing_guess.first_name_9
+        form.first_name_10.data = existing_guess.first_name_10
         form.height.data = existing_guess.height
         form.weight.data = existing_guess.weight
         form.skin_color.data = existing_guess.skin_color
@@ -584,9 +641,10 @@ def stats():
     for g in guesses:
         data.append({
             'dob': g.dob.strftime('%Y-%m-%d') if g.dob else None,
+            'time_of_birth': g.time_of_birth.strftime('%H:%M') if g.time_of_birth else None,
             'weight': g.weight,
             'height': g.height,
-            'first_names': [n for n in (g.first_name, g.first_name_2, g.first_name_3) if n and n.strip()],
+            'first_names': [n for n in (g.first_name, g.first_name_2, g.first_name_3, g.first_name_4, g.first_name_5, g.first_name_6, g.first_name_7, g.first_name_8, g.first_name_9, g.first_name_10) if n and n.strip()],
             'category': g.user.category if g.user and g.user.category else 'Autre'
         })
     import json
@@ -615,6 +673,7 @@ def export_csv():
     # Write headers
     cw.writerow([
         'Nom', 'Categorie_Utilisateur', 'Date_Prevue', 'Sexe', 'Prenom_1', 'Prenom_2', 'Prenom_3',
+        'Prenom_4', 'Prenom_5', 'Prenom_6', 'Prenom_7', 'Prenom_8', 'Prenom_9', 'Prenom_10',
         'Taille', 'Poids', 'Couleur_Peau', 'Couleur_Yeux', 'Couleur_Cheveux', 'Mot_De_Passe_Hash'
     ])
     
@@ -628,6 +687,13 @@ def export_csv():
             g.first_name,
             g.first_name_2 or '',
             g.first_name_3 or '',
+            g.first_name_4 or '',
+            g.first_name_5 or '',
+            g.first_name_6 or '',
+            g.first_name_7 or '',
+            g.first_name_8 or '',
+            g.first_name_9 or '',
+            g.first_name_10 or '',
             g.height,
             g.weight,
             g.skin_color or '',
@@ -670,7 +736,7 @@ def import_csv():
             
         success_count = 0
         for row in csv_input:
-            if len(row) < 13:
+            if len(row) < 20:
                 continue
                 
             username = row[0]
@@ -680,12 +746,19 @@ def import_csv():
             first_name = row[4]
             first_name_2 = row[5]
             first_name_3 = row[6]
-            height_str = row[7]
-            weight_str = row[8]
-            skin = row[9]
-            eye = row[10]
-            hair = row[11]
-            pwd_hash = row[12]
+            first_name_4 = row[7]
+            first_name_5 = row[8]
+            first_name_6 = row[9]
+            first_name_7 = row[10]
+            first_name_8 = row[11]
+            first_name_9 = row[12]
+            first_name_10 = row[13]
+            height_str = row[14]
+            weight_str = row[15]
+            skin = row[16]
+            eye = row[17]
+            hair = row[18]
+            pwd_hash = row[19]
             
             # Check or create User
             user = User.query.filter_by(username=username).first()
@@ -714,6 +787,13 @@ def import_csv():
                 guess.first_name = first_name
                 guess.first_name_2 = first_name_2
                 guess.first_name_3 = first_name_3
+                guess.first_name_4 = first_name_4
+                guess.first_name_5 = first_name_5
+                guess.first_name_6 = first_name_6
+                guess.first_name_7 = first_name_7
+                guess.first_name_8 = first_name_8
+                guess.first_name_9 = first_name_9
+                guess.first_name_10 = first_name_10
                 guess.height = height
                 guess.weight = weight
                 guess.skin_color = skin
@@ -727,6 +807,13 @@ def import_csv():
                     first_name=first_name,
                     first_name_2=first_name_2,
                     first_name_3=first_name_3,
+                    first_name_4=first_name_4,
+                    first_name_5=first_name_5,
+                    first_name_6=first_name_6,
+                    first_name_7=first_name_7,
+                    first_name_8=first_name_8,
+                    first_name_9=first_name_9,
+                    first_name_10=first_name_10,
                     height=height,
                     weight=weight,
                     skin_color=skin,
@@ -971,7 +1058,7 @@ def admin_results():
             rule = rules['Prénom']
             true_fn = str(form.first_name.data).strip().lower() if form.first_name.data else ''
             for g in guesses:
-                names = [str(x).strip().lower() for x in (g.first_name, g.first_name_2, g.first_name_3) if x and str(x).strip()]
+                names = [str(x).strip().lower() for x in (g.first_name, g.first_name_2, g.first_name_3, g.first_name_4, g.first_name_5, g.first_name_6, g.first_name_7, g.first_name_8, g.first_name_9, g.first_name_10) if x and str(x).strip()]
                 num_names = len(names) if names else 1
                 score = 0
                 if true_fn and true_fn in names:
@@ -981,17 +1068,17 @@ def admin_results():
                 user_scores[g.user_id]['total_score'] += score
         
         # Helper for ranked scoring (numbers/dates)
-        def score_ranked(category_name, true_val, guess_attr, diff_func):
+        def score_ranked(category_name, true_val, guess_attr_or_func, diff_func, exact_check_func=None):
             if category_name not in rules or true_val is None: return
             rule = rules[category_name]
             
             # Calculate diffs
             diffs = []
             for g in guesses:
-                guess_val = getattr(g, guess_attr)
+                guess_val = guess_attr_or_func(g) if callable(guess_attr_or_func) else getattr(g, guess_attr_or_func)
                 if guess_val is not None:
                     d = diff_func(guess_val, true_val)
-                    diffs.append((d, g.user_id))
+                    diffs.append((d, g.user_id, guess_val))
                 else:
                     user_scores[g.user_id]['details'][category_name] = 0
             
@@ -1000,7 +1087,7 @@ def admin_results():
             
             current_rank = 1
             last_diff = None
-            for idx, (d, uid) in enumerate(diffs):
+            for idx, (d, uid, guess_val) in enumerate(diffs):
                 if last_diff is not None and d > last_diff:
                     current_rank = idx + 1 # standard competition ranking (1, 2, 2, 4)
                 last_diff = d
@@ -1008,7 +1095,8 @@ def admin_results():
                 points = rule.base_points - ((current_rank - 1) * rule.decrement_per_rank)
                 points = max(0, points) # No negative points
                 
-                if d == 0:
+                is_exact = exact_check_func(guess_val, true_val) if exact_check_func else (d == 0)
+                if is_exact:
                     points += rule.exact_bonus
                     
                 user_scores[uid]['details'][category_name] = points
@@ -1017,7 +1105,25 @@ def admin_results():
         # Score ranked matches
         score_ranked('Taille', form.height.data, 'height', lambda g, t: abs(g - t))
         score_ranked('Poids', form.weight.data, 'weight', lambda g, t: abs(g - t))
-        score_ranked('Date prévue', form.dob.data, 'dob', lambda g, t: abs((g - t).days))
+        
+        # Combine date and time for Date prévue ranking
+        from datetime import time, datetime
+        def get_guess_datetime(g):
+            if not g.dob: return None
+            t = g.time_of_birth or time(12, 0) # Default to noon if no time provided
+            return datetime.combine(g.dob, t)
+            
+        true_t = form.time_of_birth.data or time(12, 0)
+        true_dt = datetime.combine(form.dob.data, true_t) if form.dob.data else None
+        
+        # We diff by total seconds, exact match is when they guess the right DAY (ignoring time)
+        score_ranked(
+            'Date prévue', 
+            true_dt, 
+            get_guess_datetime, 
+            lambda g, t: abs((g - t).total_seconds()),
+            exact_check_func=lambda g, t: g.date() == t.date()
+        )
         
         # Format results for template
         results_list = list(user_scores.values())

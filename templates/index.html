@@ -99,6 +99,7 @@
                 <th>Participant</th>
                 {% if config.show_category %}<th>Catégorie</th>{% endif %}
                 {% if config.show_dob %}<th>Date prévue</th>{% endif %}
+                {% if config.show_time %}<th>Heure</th>{% endif %}
                 {% if config.show_sex %}<th>Sexe</th>{% endif %}
                 {% if config.show_first_name %}<th>Prénom</th>{% endif %}
                 {% if config.show_height %}<th>Taille (cm)</th>{% endif %}
@@ -131,7 +132,11 @@
                 {% set is_owner_or_admin = current_user.is_authenticated and (current_user.id == guess.user_id or current_user.is_admin) %}
                 
                 {% if config.show_dob %}
-                    <td>{% if config.table_show_dob or is_owner_or_admin %}{{ guess.dob.strftime('%Y/%m/%d') if guess.dob else '-' }}{% else %}<span style="opacity: 0.4;">🔒</span>{% endif %}</td>
+                    <td>{% if config.table_show_dob or is_owner_or_admin %}{{ guess.dob.strftime('%d/%m/%Y') if guess.dob else '-' }}{% else %}<span style="opacity: 0.4;">🔒</span>{% endif %}</td>
+                {% endif %}
+                
+                {% if config.show_time %}
+                    <td>{% if config.table_show_time or is_owner_or_admin %}{{ guess.time_of_birth.strftime('%H:%M') if guess.time_of_birth else '-' }}{% else %}<span style="opacity: 0.4;">🔒</span>{% endif %}</td>
                 {% endif %}
                 
                 {% if config.show_sex %}
@@ -141,7 +146,7 @@
                 {% if config.show_first_name %}
                     <td>
                         {% if config.table_show_first_name or is_owner_or_admin %}
-                            {% set names = [guess.first_name, guess.first_name_2, guess.first_name_3] | reject("none") | reject("==", "") | list %}
+                            {% set names = [guess.first_name, guess.first_name_2, guess.first_name_3, guess.first_name_4, guess.first_name_5, guess.first_name_6, guess.first_name_7, guess.first_name_8, guess.first_name_9, guess.first_name_10] | reject("none") | reject("==", "") | list %}
                             {{ names | join(', ') if names else '-' }}
                         {% else %}<span style="opacity: 0.4;">🔒</span>{% endif %}
                     </td>
@@ -187,7 +192,26 @@
     $(document).ready(function() {
         $('#guessesTable').DataTable({
             "language": {
-                "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json"
+                "sProcessing":     "Traitement en cours...",
+                "sSearch":         "Rechercher :",
+                "sLengthMenu":     "Afficher _MENU_ éléments",
+                "sInfo":           "Affichage de l'élément _START_ à _END_ sur _TOTAL_ éléments",
+                "sInfoEmpty":      "Affichage de l'élément 0 à 0 sur 0 élément",
+                "sInfoFiltered":   "(filtré de _MAX_ éléments au total)",
+                "sInfoPostFix":    "",
+                "sLoadingRecords": "Chargement en cours...",
+                "sZeroRecords":    "Aucun élément à afficher",
+                "sEmptyTable":     "Aucune donnée disponible dans le tableau",
+                "oPaginate": {
+                    "sFirst":      "Premier",
+                    "sPrevious":   "Précédent",
+                    "sNext":       "Suivant",
+                    "sLast":       "Dernier"
+                },
+                "oAria": {
+                    "sSortAscending":  ": activer pour trier la colonne par ordre croissant",
+                    "sSortDescending": ": activer pour trier la colonne par ordre décroissant"
+                }
             },
             "pageLength": 25,
             "responsive": true,

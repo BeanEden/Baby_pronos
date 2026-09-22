@@ -61,6 +61,12 @@
             </div>
             <div class="form-section">
                 <div class="form-group" style="margin-bottom: 0;">
+                    {{ date_form.due_time.label }}
+                    {{ date_form.due_time(class="form-control", type="time") }}
+                </div>
+            </div>
+            <div class="form-section">
+                <div class="form-group" style="margin-bottom: 0;">
                     {{ date_form.sex.label }}
                     {{ date_form.sex(class="form-control") }}
                 </div>
@@ -82,6 +88,9 @@
             <div class="form-section">
                 <div class="form-group" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px;">
                     {{ config_form.show_dob() }} {{ config_form.show_dob.label }}
+                </div>
+                <div class="form-group" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px;">
+                    {{ config_form.show_time() }} {{ config_form.show_time.label }}
                 </div>
                 <div class="form-group" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px;">
                     {{ config_form.show_sex() }} {{ config_form.show_sex.label }}
@@ -112,6 +121,13 @@
                 </div>
                 <div class="form-group" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px; font-weight: bold; color: #ff7675;">
                     {{ config_form.lock_sex() }} {{ config_form.lock_sex.label }}
+                </div>
+                
+                <div class="form-group" style="margin-top: 10px;">
+                    <label>
+                        {{ config_form.max_names.label }}
+                    </label>
+                    {{ config_form.max_names(class="form-control", style="width: auto; display: inline-block; margin-left: 10px;") }}
                 </div>
                 <hr style="margin: 1rem 0; border: 0; height: 1px; background: rgba(0,0,0,0.1);">
                 <div class="form-group" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px; font-weight: bold; color: var(--primary-color);">
@@ -155,6 +171,9 @@
             <div class="form-section">
                 <div class="form-group" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px;">
                     {{ config_form.table_show_dob() }} {{ config_form.table_show_dob.label }}
+                </div>
+                <div class="form-group" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px;">
+                    {{ config_form.table_show_time() }} {{ config_form.table_show_time.label }}
                 </div>
                 <div class="form-group" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px;">
                     {{ config_form.table_show_sex() }} {{ config_form.table_show_sex.label }}
@@ -398,7 +417,26 @@
     $(document).ready(function() {
         $('#cluesTable').DataTable({
             "language": {
-                "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json"
+                "sProcessing":     "Traitement en cours...",
+                "sSearch":         "Rechercher :",
+                "sLengthMenu":     "Afficher _MENU_ éléments",
+                "sInfo":           "Affichage de l'élément _START_ à _END_ sur _TOTAL_ éléments",
+                "sInfoEmpty":      "Affichage de l'élément 0 à 0 sur 0 élément",
+                "sInfoFiltered":   "(filtré de _MAX_ éléments au total)",
+                "sInfoPostFix":    "",
+                "sLoadingRecords": "Chargement en cours...",
+                "sZeroRecords":    "Aucun élément à afficher",
+                "sEmptyTable":     "Aucune donnée disponible dans le tableau",
+                "oPaginate": {
+                    "sFirst":      "Premier",
+                    "sPrevious":   "Précédent",
+                    "sNext":       "Suivant",
+                    "sLast":       "Dernier"
+                },
+                "oAria": {
+                    "sSortAscending":  ": activer pour trier la colonne par ordre croissant",
+                    "sSortDescending": ": activer pour trier la colonne par ordre décroissant"
+                }
             },
             "pageLength": 10,
             "responsive": true,

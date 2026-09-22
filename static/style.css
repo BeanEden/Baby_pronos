@@ -1,12 +1,12 @@
 :root {
-    --primary-color: #4A90E2; /* Deeper blue for better contrast */
-    --secondary-color: #7BB0F1; /* Slightly lighter blue */
-    --accent-color: #f6d365; /* Soft yellow */
-    --accent-secondary: #ffdea8; /* Soft warm */
-    --text-main: #2d3436;
-    --text-muted: #636e72;
-    --bg-color: #fdfbfb;
-    --card-bg: rgba(255, 255, 255, 0.7);
+    --primary-color: #0a0089; /* 10% Tertiary - Text/Highlights/Important CTA */
+    --secondary-color: #b99000; /* 30% Secondary - Cards/Accents/Buttons */
+    --accent-color: #b99000; /* Soft yellow */
+    --accent-secondary: #0a0089; /* Soft warm */
+    --text-main: #0a0089;
+    --text-muted: #5e4f16;
+    --bg-color: #fbf5da; /* 60% Main background (attenuated) */
+    --card-bg: rgba(255, 255, 255, 0.85);
     --border-radius: 16px;
     --transition-speed: 0.3s;
 }
@@ -15,7 +15,7 @@ body {
     font-family: 'Outfit', sans-serif;
     margin: 0;
     padding: 0;
-    background: linear-gradient(135deg, var(--bg-color) 0%, #ebedee 100%);
+    background: linear-gradient(135deg, var(--bg-color) 0%, #fefcf3 100%);
     color: var(--text-main);
     min-height: 100vh;
 }
@@ -39,11 +39,8 @@ body {
 .nav-brand a {
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--text-main);
+    color: var(--primary-color);
     text-decoration: none;
-    background: -webkit-linear-gradient(45deg, var(--primary-color), var(--accent-color));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
 }
 
 .nav-links {
@@ -77,26 +74,29 @@ body {
 }
 
 .btn-primary {
-    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    background: var(--primary-color);
     color: white;
-    box-shadow: 0 4px 15px rgba(255, 154, 158, 0.3);
+    box-shadow: 0 4px 15px rgba(10, 0, 137, 0.3);
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(255, 154, 158, 0.5);
+    box-shadow: 0 6px 20px rgba(10, 0, 137, 0.5);
+    background: #080070;
     color: white;
 }
 
 .btn-secondary {
-    background: white;
-    color: var(--text-main);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    background: var(--secondary-color);
+    color: white;
+    box-shadow: 0 4px 15px rgba(185, 144, 0, 0.2);
 }
 
 .btn-secondary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 6px 20px rgba(185, 144, 0, 0.4);
+    background: #d4a706;
+    color: white;
 }
 
 .full-width {
@@ -340,8 +340,8 @@ body {
 
 .form-control:focus {
     outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(255, 154, 158, 0.2);
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 3px rgba(185, 144, 0, 0.2);
 }
 
 .submit-group {

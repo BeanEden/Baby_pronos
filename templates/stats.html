@@ -143,7 +143,11 @@
                     <input type="date" id="dateEnd" class="form-control" style="padding: 0.2rem; border-radius: 6px; border: 1px solid #ccc; width: auto; font-size: 0.9rem;">
                 </div>
             </div>
-            <div id="chart-dob" class="chart-box"></div>
+            <div id="chart-dob" class="chart-box" style="height: 220px; margin-bottom: 1rem;"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; margin-top: 1rem; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 1rem;">
+                <h2 id="time-chart-title" style="margin: 0; font-size: 1.2rem;">⏰ Heures choisies</h2>
+            </div>
+            <div id="chart-time" class="chart-box" style="height: 180px;"></div>
         </div>
     </div>
 
@@ -191,6 +195,7 @@
 
     let viewByCategory = false;
     let filteredData = rawData;
+    let selectedDateForTime = null;
 
     function applyFilters() {
         let start = document.getElementById('dateStart').value;
@@ -238,6 +243,7 @@
     
     // Charts instances
     let chartDob = echarts.init(document.getElementById('chart-dob'));
+    let chartTime = echarts.init(document.getElementById('chart-time'));
     let chartHeight = echarts.init(document.getElementById('chart-height'));
     let chartWeight = echarts.init(document.getElementById('chart-weight'));
     let chartNamesCloud = echarts.init(document.getElementById('chart-names-cloud'));
@@ -245,9 +251,70 @@
 
     function renderCharts() {
         renderDobChart();
+        renderTimeChart();
         renderHeightChart();
         renderWeightChart();
         renderNamesCharts();
+    }
+
+    // --- TIME CHART ---
+    function renderTimeChart() {
+        let countsByHour = {};
+        let catsByHour = {};
+        
+        filteredData.forEach(d => {
+            if (selectedDateForTime && d.dob !== selectedDateForTime) return;
+            
+            if (d.time_of_birth) {
+                // Extract just the hour part (e.g. "14:30" -> "14h")
+                let hourStr = d.time_of_birth.split(':')[0] + 'h';
+                countsByHour[hourStr] = (countsByHour[hourStr] || 0) + 1;
+                if (!catsByHour[hourStr]) catsByHour[hourStr] = {};
+                catsByHour[hourStr][d.category] = (catsByHour[hourStr][d.category] || 0) + 1;
+            }
+        });
+        
+        // Generate X axis (00h to 23h)
+        let hours = [];
+        for (let i = 0; i < 24; i++) {
+            hours.push(i.toString().padStart(2, '0') + 'h');
+        }
+        
+        let option = {
+            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+            xAxis: {
+                type: 'category',
+                data: hours,
+                axisLabel: { interval: 1 }
+            },
+            yAxis: { type: 'value', minInterval: 1 },
+            series: []
+        };
+        
+        if (!viewByCategory) {
+            let data = hours.map(h => countsByHour[h] || 0);
+            option.series.push({
+                data: data,
+                type: 'bar',
+                itemStyle: { color: '#00b894' },
+                barMaxWidth: 40
+            });
+        } else {
+            option.legend = { data: categories };
+            categories.forEach(cat => {
+                let data = hours.map(h => (catsByHour[h] && catsByHour[h][cat]) ? catsByHour[h][cat] : 0);
+                option.series.push({
+                    name: cat,
+                    type: 'bar',
+                    stack: 'total',
+                    itemStyle: { color: categoryColors[cat] },
+                    data: data,
+                    barMaxWidth: 40
+                });
+            });
+        }
+        
+        chartTime.setOption(option, true);
     }
 
     // --- CALENDAR CHART (DOB) ---
@@ -594,11 +661,33 @@
         applyFilters();
     });
     
+    chartDob.on('click', function (params) {
+        if (params.componentType === 'series') {
+            let dateClicked = params.data[0];
+            if (selectedDateForTime === dateClicked) {
+                selectedDateForTime = null; // Toggle off
+            } else {
+                selectedDateForTime = dateClicked;
+            }
+            renderTimeChart();
+            
+            let titleEl = document.getElementById('time-chart-title');
+            if (titleEl) {
+                if (selectedDateForTime) {
+                    titleEl.innerHTML = `⏰ Heures choisies <span style="font-size: 0.9rem; color: #6c5ce7; font-weight: normal;">(Filtré sur le ${selectedDateForTime})</span> <span style="font-size: 0.8rem; cursor:pointer; text-decoration:underline; color:#d63031;" onclick="selectedDateForTime=null; renderTimeChart(); document.getElementById('time-chart-title').innerHTML='⏰ Heures choisies';">Effacer le filtre</span>`;
+                } else {
+                    titleEl.innerHTML = `⏰ Heures choisies`;
+                }
+            }
+        }
+    });
+    
     document.getElementById('dateStart').addEventListener('change', applyFilters);
     document.getElementById('dateEnd').addEventListener('change', applyFilters);
 
     window.addEventListener('resize', function() {
         chartDob.resize();
+        chartTime.resize();
         chartHeight.resize();
         chartWeight.resize();
         chartNamesCloud.resize();

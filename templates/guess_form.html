@@ -1,5 +1,27 @@
 {% extends 'base.html' %}
 
+{% block head %}
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
+<style>
+    /* DataTables specific fixes */
+    #cluesTable_wrapper .dataTables_filter input {
+        border: 2px solid #e1e1e1;
+        border-radius: 10px;
+        padding: 0.3rem 0.5rem;
+        background: rgba(255,255,255,0.9);
+        margin-bottom: 0.5rem;
+        font-family: 'Outfit', sans-serif;
+    }
+    #cluesTable_wrapper .dataTables_length select {
+        border: 2px solid #e1e1e1;
+        border-radius: 8px;
+        padding: 0.2rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="form-container">
     <h2>{% if existing %}Modifier{% else %}Faire{% endif %} votre pronostic</h2>
@@ -38,15 +60,29 @@
         {% if config.show_dob or config.show_sex or config.show_first_name or config.show_height or config.show_weight %}
         <div class="form-section">
             <h3>Les Essentiels</h3>
-            {% if config.show_dob %}
-            <div class="form-group">
-                {{ form.dob.label }}
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    {{ form.dob(class="form-control", type="date") }}
-                    {% if config.show_hints and baby_info and baby_info.due_date %}
-                    <span style="font-size: 0.85rem; color: var(--primary-color); white-space: nowrap; font-weight: 600;">(Terme : {{ baby_info.due_date.strftime('%d/%m/%Y') }})</span>
-                    {% endif %}
+            {% if config.show_dob or config.show_time %}
+            <div class="two-columns">
+                {% if config.show_dob %}
+                <div class="form-section">
+                    <div class="form-group">
+                        {{ form.dob.label }}
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            {{ form.dob(class="form-control", type="date") }}
+                            {% if config.show_hints and baby_info and baby_info.due_date %}
+                            <span style="font-size: 0.85rem; color: var(--primary-color); white-space: nowrap; font-weight: 600;">(Terme : {{ baby_info.due_date.strftime('%d/%m/%Y') }})</span>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
+                {% endif %}
+                {% if config.show_time %}
+                <div class="form-section">
+                    <div class="form-group">
+                        {{ form.time_of_birth.label }}
+                        {{ form.time_of_birth(class="form-control", type="time") }}
+                    </div>
+                </div>
+                {% endif %}
             </div>
             {% endif %}
             {% if config.show_sex %}
@@ -58,7 +94,7 @@
                     {% else %}
                         {{ form.sex(class="form-control") }}
                     {% endif %}
-                    {% if config.show_hints and baby_info and baby_info.sex %}
+                    {% if config.show_hints and baby_info and baby_info.sex and not config.lock_sex %}
                     <span style="font-size: 0.85rem; color: var(--primary-color); white-space: nowrap; font-weight: 600;">(Indice : {{ baby_info.sex }})</span>
                     {% endif %}
                 </div>
@@ -66,41 +102,61 @@
             {% endif %}
             {% if config.show_first_name %}
             <div class="form-group">
-                <label style="font-weight: bold; color: var(--primary-color);">Prénoms (Jusqu'à 3)</label>
+                <label style="font-weight: bold; color: var(--primary-color);">Prénoms (Jusqu'à {{ config.max_names }})</label>
                 <p style="font-size: 0.85rem; color: #d63031; margin-top: 5px; margin-bottom: 10px;">Attention : Si vous trouvez le bon prénom, vos points seront divisés par le nombre de prénoms proposés !</p>
-                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
-                    {{ form.first_name(class="form-control", placeholder="Prénom 1 (Ex: Lucas)") }}
-                    {% if config.show_hints and prenom_clues %}
-                    <select class="form-control" style="width: auto; max-width: 150px; font-size: 0.85rem;" onchange="if(this.value) document.getElementById('{{ form.first_name.id }}').value = this.value">
-                        <option value="">Indices...</option>
-                        {% for clue in prenom_clues %}
-                        <option value="{{ clue.value }}">{{ clue.value }}</option>
-                        {% endfor %}
-                    </select>
-                    {% endif %}
+                {% if config.show_hints and prenom_clues %}
+                <details style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #e9ecef;">
+                    <summary style="color: var(--primary-color); font-weight: bold; cursor: pointer; user-select: none; font-size: 1.05rem; display: flex; align-items: center; justify-content: space-between; outline: none;">
+                        <span>💡 Afficher les indices de prénoms</span>
+                        <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">Cliquer pour dérouler</span>
+                    </summary>
+                    <div style="margin-top: 15px;">
+                        <div class="table-responsive">
+                            <table id="cluesTable" class="display responsive nowrap table table-sm table-bordered" style="width:100%; font-size: 0.85rem; background-color: white; margin-bottom: 0;">
+                                <thead style="background-color: #f1f3f5;">
+                                    <tr>
+                                        <th>Prénom</th>
+                                        <th>Relation avec le bébé</th>
+                                        <th>Côté familial</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for clue in prenom_clues %}
+                                    <tr>
+                                        <td style="font-weight: bold;">{{ clue.value }}</td>
+                                        <td>{{ clue.relation_link or '-' }}</td>
+                                        <td>{{ clue.relative_name or '-' }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <small style="color: #6c757d; display: block; margin-top: 5px;">Vous pouvez vous inspirer de ces indices pour vos propositions ci-dessous.</small>
+                    </div>
+                </details>
+                {% endif %}
+
+                {% set name_fields = [
+                    (form.first_name, "Prénom 1 (Ex: Lucas)"),
+                    (form.first_name_2, "Prénom 2 (Optionnel)"),
+                    (form.first_name_3, "Prénom 3 (Optionnel)"),
+                    (form.first_name_4, "Prénom 4 (Optionnel)"),
+                    (form.first_name_5, "Prénom 5 (Optionnel)"),
+                    (form.first_name_6, "Prénom 6 (Optionnel)"),
+                    (form.first_name_7, "Prénom 7 (Optionnel)"),
+                    (form.first_name_8, "Prénom 8 (Optionnel)"),
+                    (form.first_name_9, "Prénom 9 (Optionnel)"),
+                    (form.first_name_10, "Prénom 10 (Optionnel)")
+                ] %}
+                <div id="name-fields-container">
+                    {% for i in range(config.max_names) %}
+                    {% set field, placeholder = name_fields[i] %}
+                    <div class="name-field-wrapper" style="margin-bottom: 10px; {% if i > 0 and not field.data %}display: none;{% endif %}" data-index="{{ i }}">
+                        {{ field(class="form-control", placeholder=placeholder) }}
+                    </div>
+                    {% endfor %}
                 </div>
-                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
-                    {{ form.first_name_2(class="form-control", placeholder="Prénom 2 (Optionnel)") }}
-                    {% if config.show_hints and prenom_clues %}
-                    <select class="form-control" style="width: auto; max-width: 150px; font-size: 0.85rem;" onchange="if(this.value) document.getElementById('{{ form.first_name_2.id }}').value = this.value">
-                        <option value="">Indices...</option>
-                        {% for clue in prenom_clues %}
-                        <option value="{{ clue.value }}">{{ clue.value }}</option>
-                        {% endfor %}
-                    </select>
-                    {% endif %}
-                </div>
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    {{ form.first_name_3(class="form-control", placeholder="Prénom 3 (Optionnel)") }}
-                    {% if config.show_hints and prenom_clues %}
-                    <select class="form-control" style="width: auto; max-width: 150px; font-size: 0.85rem;" onchange="if(this.value) document.getElementById('{{ form.first_name_3.id }}').value = this.value">
-                        <option value="">Indices...</option>
-                        {% for clue in prenom_clues %}
-                        <option value="{{ clue.value }}">{{ clue.value }}</option>
-                        {% endfor %}
-                    </select>
-                    {% endif %}
-                </div>
+                <button type="button" id="add-name-btn" class="btn-secondary" style="font-size: 0.85rem; padding: 0.4rem 0.8rem; margin-top: 5px;">+ Ajouter un prénom</button>
             </div>
             {% endif %}
             {% if config.show_height %}
@@ -155,7 +211,7 @@
             <div style="background: white; border-radius: 8px; overflow: hidden; border: 1px solid rgba(0,0,0,0.1);">
                 <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
                     <thead>
-                        <tr style="background-color: var(--accent-secondary); color: var(--primary-color);">
+                        <tr style="background-color: var(--accent-secondary); color: var(--bg-color);">
                             <th style="padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.1);">Catégorie</th>
                             <th style="padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.1);">Points pour le plus proche</th>
                             <th style="padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.1);">Diminution par rang</th>
@@ -195,4 +251,70 @@
         </div>
     </form>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<!-- jQuery and DataTables JS -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#cluesTable').DataTable({
+            "language": {
+                "sProcessing":     "Traitement en cours...",
+                "sSearch":         "Rechercher un prénom ou lien :",
+                "sLengthMenu":     "Afficher _MENU_ indices",
+                "sInfo":           "Affichage de _START_ à _END_ sur _TOTAL_ indices",
+                "sInfoEmpty":      "Affichage de 0 à 0 sur 0 indice",
+                "sInfoFiltered":   "(filtré de _MAX_ indices au total)",
+                "sInfoPostFix":    "",
+                "sLoadingRecords": "Chargement en cours...",
+                "sZeroRecords":    "Aucun indice ne correspond à votre recherche",
+                "sEmptyTable":     "Aucun indice disponible pour le moment",
+                "oPaginate": {
+                    "sFirst":      "Premier",
+                    "sPrevious":   "Précédent",
+                    "sNext":       "Suivant",
+                    "sLast":       "Dernier"
+                },
+                "oAria": {
+                    "sSortAscending":  ": activer pour trier la colonne par ordre croissant",
+                    "sSortDescending": ": activer pour trier la colonne par ordre décroissant"
+                }
+            },
+            "pageLength": 10,
+            "responsive": true,
+            "order": [[ 0, "asc" ]]
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const wrappers = document.querySelectorAll('.name-field-wrapper');
+        const addBtn = document.getElementById('add-name-btn');
+        
+        function updateButtonVisibility() {
+            if (!addBtn) return;
+            const allShown = Array.from(wrappers).every(w => w.style.display !== 'none');
+            if (allShown) {
+                addBtn.style.display = 'none';
+            }
+        }
+        
+        if (addBtn) {
+            addBtn.addEventListener('click', function() {
+                for (let w of wrappers) {
+                    if (w.style.display === 'none') {
+                        w.style.display = 'block';
+                        const input = w.querySelector('input');
+                        if (input) input.focus();
+                        break;
+                    }
+                }
+                updateButtonVisibility();
+            });
+            updateButtonVisibility();
+        }
+    });
+</script>
 {% endblock %}

@@ -72,6 +72,7 @@ class Guess(db.Model):
     skin_color = db.Column(db.String(100), nullable=True)
     eye_color = db.Column(db.String(100), nullable=True)
     hair_color = db.Column(db.String(100), nullable=True)
+    is_hidden = db.Column(db.Boolean, default=False)
 
 class FormConfig(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -254,6 +255,9 @@ def public_table():
         return redirect(url_for('index'))
         
     guesses = Guess.query.all()
+    if not (current_user.is_admin and not session.get('view_as_user')):
+        guesses = [g for g in guesses if not g.is_hidden or g.user_id == current_user.id]
+        
     return render_template('index.html', guesses=guesses, config=form_config)
 
 @app.route('/admin/toggle_view')
@@ -262,6 +266,28 @@ def toggle_view():
     if current_user.is_admin:
         from flask import session
         session['view_as_user'] = not session.get('view_as_user', False)
+    return redirect(request.referrer or url_for('public_table'))
+
+@app.route('/admin/guess/hide/<int:guess_id>')
+@login_required
+def toggle_hide_guess(guess_id):
+    if not current_user.is_admin:
+        return redirect(url_for('index'))
+    guess = Guess.query.get_or_404(guess_id)
+    guess.is_hidden = not guess.is_hidden
+    db.session.commit()
+    flash('Visibilité du pronostic modifiée.', 'success')
+    return redirect(request.referrer or url_for('public_table'))
+
+@app.route('/admin/guess/delete/<int:guess_id>', methods=['POST'])
+@login_required
+def delete_guess(guess_id):
+    if not current_user.is_admin:
+        return redirect(url_for('index'))
+    guess = Guess.query.get_or_404(guess_id)
+    db.session.delete(guess)
+    db.session.commit()
+    flash('Pronostic supprimé avec succès.', 'success')
     return redirect(request.referrer or url_for('public_table'))
 
 
@@ -1238,6 +1264,7 @@ with app.app_context():
         "ALTER TABLE guess ADD COLUMN first_name_8 VARCHAR(150)",
         "ALTER TABLE guess ADD COLUMN first_name_9 VARCHAR(150)",
         "ALTER TABLE guess ADD COLUMN first_name_10 VARCHAR(150)",
+        "ALTER TABLE guess ADD COLUMN is_hidden BOOLEAN DEFAULT false",
         "ALTER TABLE form_config ADD COLUMN show_time BOOLEAN DEFAULT true",
         "ALTER TABLE form_config ADD COLUMN table_show_time BOOLEAN DEFAULT true",
         "ALTER TABLE form_config ADD COLUMN max_names INTEGER DEFAULT 3",

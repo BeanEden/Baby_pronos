@@ -124,7 +124,7 @@
         </thead>
         <tbody>
             {% for guess in guesses %}
-            <tr class="{% if current_user.is_authenticated and guess.user_id == current_user.id %}my-guess-row{% endif %}">
+            <tr class="{% if current_user.is_authenticated and guess.user_id == current_user.id %}my-guess-row{% endif %}" {% if guess.is_hidden %}style="opacity: 0.5;"{% endif %}>
                 <td>
                     {% set effective_is_admin = current_user.is_authenticated and current_user.is_admin and not session.get('view_as_user') %}
                     {% if config.anonymous_mode and not effective_is_admin %}
@@ -187,6 +187,16 @@
                 <td>
                     {% if current_user.is_authenticated and guess.user_id == current_user.id %}
                         <a href="{{ url_for('guess') }}" class="action-icon" title="Modifier mon pronostic">✏️</a>
+                    {% endif %}
+                    {% if current_user.is_authenticated and current_user.is_admin and not session.get('view_as_user') %}
+                        <a href="{{ url_for('toggle_hide_guess', guess_id=guess.id) }}" class="action-icon" title="{% if guess.is_hidden %}Afficher{% else %}Masquer{% endif %}" style="margin-left: 5px;">
+                            {% if guess.is_hidden %}👁️‍🗨️{% else %}👁️{% endif %}
+                        </a>
+                        <form action="{{ url_for('delete_guess', guess_id=guess.id) }}" method="POST" style="display:inline;">
+                            <button type="submit" class="action-icon" title="Supprimer" style="border:none; background:none; cursor:pointer; margin-left: 5px;" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce pronostic ?');">
+                                🗑️
+                            </button>
+                        </form>
                     {% endif %}
                 </td>
             </tr>

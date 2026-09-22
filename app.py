@@ -1256,6 +1256,23 @@ with app.app_context():
             db.session.commit()
         except Exception:
             db.session.rollback()
+            
+    # Auto-create admin account
+    try:
+        from werkzeug.security import generate_password_hash
+        admin_username = "admin admin"
+        admin_user = User.query.filter_by(username=admin_username).first()
+        if not admin_user:
+            admin_user = User(
+                username=admin_username,
+                password_hash=generate_password_hash("123", method="pbkdf2:sha256"),
+                is_admin=True,
+                category="Famille"
+            )
+            db.session.add(admin_user)
+            db.session.commit()
+    except Exception:
+        db.session.rollback()
 
 if __name__ == '__main__':
     app.run(debug=True)

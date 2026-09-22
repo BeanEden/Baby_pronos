@@ -1046,6 +1046,47 @@ def import_scoring_csv():
     flash('Fichier invalide. Veuillez importer un fichier .csv', 'danger')
     return redirect(url_for('admin_info'))
 
+@app.route('/admin/users')
+@login_required
+def admin_users():
+    if not current_user.is_admin:
+        flash('Accès refusé.', 'danger')
+        return redirect(url_for('index'))
+    users = User.query.all()
+    return render_template('admin_users.html', users=users)
+
+@app.route('/admin/users/delete/<int:user_id>', methods=['POST'])
+@login_required
+def admin_delete_user(user_id):
+    if not current_user.is_admin:
+        return redirect(url_for('index'))
+    user = User.query.get_or_404(user_id)
+    if user.id == current_user.id:
+        flash('Vous ne pouvez pas vous supprimer vous-même !', 'danger')
+        return redirect(url_for('admin_users'))
+    if user.guess:
+        db.session.delete(user.guess)
+    db.session.delete(user)
+    db.session.commit()
+    flash(f'L\'utilisateur {user.username} a été supprimé.', 'success')
+    return redirect(url_for('admin_users'))
+
+@app.route('/admin/users/reset_password/<int:user_id>', methods=['POST'])
+@login_required
+def admin_reset_password(user_id):
+    if not current_user.is_admin:
+        return redirect(url_for('index'))
+    user = User.query.get_or_404(user_id)
+    new_password = request.form.get('new_password', '').strip()
+    if not new_password:
+        flash('Le mot de passe ne peut pas être vide.', 'danger')
+        return redirect(url_for('admin_users'))
+        
+    user.password_hash = generate_password_hash(new_password, method='pbkdf2:sha256')
+    db.session.commit()
+    flash(f'Le mot de passe de {user.username} a été réinitialisé avec succès.', 'success')
+    return redirect(url_for('admin_users'))
+
 @app.route('/admin/results', methods=['GET', 'POST'])
 @login_required
 def admin_results():

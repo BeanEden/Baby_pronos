@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="header-section">
+    <h1>Gestion des Utilisateurs</h1>
+    <p>Gérez les comptes inscrits, modifiez les mots de passe ou supprimez des comptes.</p>
+</div>
+
+<div class="table-container" style="margin-top: 2rem;">
+    <table class="display responsive nowrap" style="width:100%">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nom d'utilisateur</th>
+                <th>Catégorie</th>
+                <th>Rôle</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in users %}
+            <tr>
+                <td>{{ u.id }}</td>
+                <td>{{ u.username }}</td>
+                <td>{{ u.category or '-' }}</td>
+                <td>{% if u.is_admin %}<span class="badge" style="background:#6c5ce7;color:white;padding:2px 6px;border-radius:4px;">Admin</span>{% else %}Participant{% endif %}</td>
+                <td style="display:flex; gap:10px;">
+                    <!-- Change Password Form -->
+                    <form action="{{ url_for('admin_reset_password', user_id=u.id) }}" method="POST" style="display:flex; gap:5px;">
+                        <input type="text" name="new_password" placeholder="Nouveau mot de passe" required style="padding: 4px; border: 1px solid #ccc; border-radius: 4px;">
+                        <button type="submit" class="btn btn-sm btn-outline-primary" style="padding: 4px 8px;" onclick="return confirm('Confirmer le nouveau mot de passe pour {{ u.username }} ?');">
+                            Modifier MDP
+                        </button>
+                    </form>
+                    
+                    <!-- Delete User Form -->
+                    {% if current_user.id != u.id %}
+                    <form action="{{ url_for('admin_delete_user', user_id=u.id) }}" method="POST">
+                        <button type="submit" class="btn btn-sm" style="background-color: #ff7675; color: white; padding: 4px 8px;" onclick="return confirm('ATTENTION : Supprimer ce compte supprimera également son pronostic. Êtes-vous sûr ?');">
+                            🗑️ Supprimer
+                        </button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+    th, td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #e1e1e1;
+    }
+    th {
+        background-color: #f1f2f6;
+    }
+    input[type="text"] {
+        width: 150px;
+    }
+</style>
+{% endblock %}

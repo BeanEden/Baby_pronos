@@ -1210,8 +1210,35 @@ def admin_simulator():
 
 
 
+from sqlalchemy import text
+
 with app.app_context():
     db.create_all()
+    
+    # Auto-migration for newly added columns
+    try:
+        db.session.execute(text("ALTER TABLE baby_info ADD COLUMN time_of_birth TIME"))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        
+    try:
+        db.session.execute(text("ALTER TABLE guess ADD COLUMN time_of_birth TIME"))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        
+    try:
+        db.session.execute(text("ALTER TABLE form_config ADD COLUMN show_time BOOLEAN DEFAULT true"))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        
+    try:
+        db.session.execute(text("ALTER TABLE form_config ADD COLUMN table_show_time BOOLEAN DEFAULT true"))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
 
 if __name__ == '__main__':
     app.run(debug=True)

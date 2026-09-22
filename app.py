@@ -248,12 +248,22 @@ def public_table():
     form_config = FormConfig.query.first()
     if not form_config:
         form_config = FormConfig()
+        
     if not form_config.enable_table_page and not (current_user.is_authenticated and current_user.is_admin):
-        flash('Le tableau des pronostics n\'est pas disponible.', 'warning')
+        flash('Le tableau public n\'est pas encore disponible.', 'warning')
         return redirect(url_for('index'))
         
     guesses = Guess.query.all()
     return render_template('index.html', guesses=guesses, config=form_config)
+
+@app.route('/admin/toggle_view')
+@login_required
+def toggle_view():
+    if current_user.is_admin:
+        from flask import session
+        session['view_as_user'] = not session.get('view_as_user', False)
+    return redirect(request.referrer or url_for('public_table'))
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():

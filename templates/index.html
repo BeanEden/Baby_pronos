@@ -92,6 +92,18 @@
 </div>
 {% endif %}
 
+{% if current_user.is_authenticated and current_user.is_admin %}
+<div style="text-align: right; margin-bottom: 1rem;">
+    <a href="{{ url_for('toggle_view') }}" class="btn btn-sm {% if session.get('view_as_user') %}btn-warning{% else %}btn-outline-primary{% endif %}">
+        {% if session.get('view_as_user') %}
+        👁️ Mode Participant (Désactiver)
+        {% else %}
+        👁️ Voir comme Participant
+        {% endif %}
+    </a>
+</div>
+{% endif %}
+
 <div class="table-container">
     <table id="guessesTable" class="display responsive nowrap" style="width:100%">
         <thead>
@@ -114,7 +126,8 @@
             {% for guess in guesses %}
             <tr class="{% if current_user.is_authenticated and guess.user_id == current_user.id %}my-guess-row{% endif %}">
                 <td>
-                    {% if config.anonymous_mode %}
+                    {% set effective_is_admin = current_user.is_authenticated and current_user.is_admin and not session.get('view_as_user') %}
+                    {% if config.anonymous_mode and not effective_is_admin %}
                         {% if current_user.is_authenticated and guess.user_id == current_user.id %}
                             {{ guess.user.username }}
                         {% else %}
@@ -129,7 +142,7 @@
                     {% endif %}
                 </td>
                 {% if config.show_category %}<td>{{ guess.user.category or '-' }}</td>{% endif %}
-                {% set is_owner_or_admin = current_user.is_authenticated and (current_user.id == guess.user_id or current_user.is_admin) %}
+                {% set is_owner_or_admin = current_user.is_authenticated and (current_user.id == guess.user_id or (current_user.is_admin and not session.get('view_as_user'))) %}
                 
                 {% if config.show_dob %}
                     <td>{% if config.table_show_dob or is_owner_or_admin %}{{ guess.dob.strftime('%d/%m/%Y') if guess.dob else '-' }}{% else %}<span style="opacity: 0.4;">🔒</span>{% endif %}</td>

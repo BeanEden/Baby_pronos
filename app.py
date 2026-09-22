@@ -1216,29 +1216,46 @@ with app.app_context():
     db.create_all()
     
     # Auto-migration for newly added columns
-    try:
-        db.session.execute(text("ALTER TABLE baby_info ADD COLUMN time_of_birth TIME"))
-        db.session.commit()
-    except Exception:
-        db.session.rollback()
-        
-    try:
-        db.session.execute(text("ALTER TABLE guess ADD COLUMN time_of_birth TIME"))
-        db.session.commit()
-    except Exception:
-        db.session.rollback()
-        
-    try:
-        db.session.execute(text("ALTER TABLE form_config ADD COLUMN show_time BOOLEAN DEFAULT true"))
-        db.session.commit()
-    except Exception:
-        db.session.rollback()
-        
-    try:
-        db.session.execute(text("ALTER TABLE form_config ADD COLUMN table_show_time BOOLEAN DEFAULT true"))
-        db.session.commit()
-    except Exception:
-        db.session.rollback()
+    migrations = [
+        "ALTER TABLE baby_info ADD COLUMN time_of_birth TIME",
+        "ALTER TABLE guess ADD COLUMN time_of_birth TIME",
+        "ALTER TABLE guess ADD COLUMN first_name_2 VARCHAR(150)",
+        "ALTER TABLE guess ADD COLUMN first_name_3 VARCHAR(150)",
+        "ALTER TABLE guess ADD COLUMN first_name_4 VARCHAR(150)",
+        "ALTER TABLE guess ADD COLUMN first_name_5 VARCHAR(150)",
+        "ALTER TABLE guess ADD COLUMN first_name_6 VARCHAR(150)",
+        "ALTER TABLE guess ADD COLUMN first_name_7 VARCHAR(150)",
+        "ALTER TABLE guess ADD COLUMN first_name_8 VARCHAR(150)",
+        "ALTER TABLE guess ADD COLUMN first_name_9 VARCHAR(150)",
+        "ALTER TABLE guess ADD COLUMN first_name_10 VARCHAR(150)",
+        "ALTER TABLE form_config ADD COLUMN show_time BOOLEAN DEFAULT true",
+        "ALTER TABLE form_config ADD COLUMN table_show_time BOOLEAN DEFAULT true",
+        "ALTER TABLE form_config ADD COLUMN max_names INTEGER DEFAULT 3",
+        "ALTER TABLE form_config ADD COLUMN welcome_message TEXT",
+        "ALTER TABLE form_config ADD COLUMN table_show_dob BOOLEAN DEFAULT true",
+        "ALTER TABLE form_config ADD COLUMN table_show_sex BOOLEAN DEFAULT true",
+        "ALTER TABLE form_config ADD COLUMN table_show_first_name BOOLEAN DEFAULT true",
+        "ALTER TABLE form_config ADD COLUMN table_show_height BOOLEAN DEFAULT true",
+        "ALTER TABLE form_config ADD COLUMN table_show_weight BOOLEAN DEFAULT true",
+        "ALTER TABLE form_config ADD COLUMN table_show_skin_color BOOLEAN DEFAULT true",
+        "ALTER TABLE form_config ADD COLUMN table_show_eye_color BOOLEAN DEFAULT true",
+        "ALTER TABLE form_config ADD COLUMN table_show_hair_color BOOLEAN DEFAULT true",
+        "ALTER TABLE form_config ADD COLUMN enable_stats_page BOOLEAN DEFAULT true",
+        "ALTER TABLE form_config ADD COLUMN enable_table_page BOOLEAN DEFAULT true",
+        "ALTER TABLE form_config ADD COLUMN show_category BOOLEAN DEFAULT true",
+        "ALTER TABLE form_config ADD COLUMN prize_text TEXT",
+        "ALTER TABLE form_config ADD COLUMN rules_text TEXT",
+        "ALTER TABLE form_config ADD COLUMN show_hints BOOLEAN DEFAULT true",
+        "ALTER TABLE form_config ADD COLUMN lock_sex BOOLEAN DEFAULT false",
+        "ALTER TABLE form_config ADD COLUMN anonymous_mode BOOLEAN DEFAULT false",
+        "ALTER TABLE form_config ADD COLUMN guess_deadline TIMESTAMP",
+    ]
+    for query in migrations:
+        try:
+            db.session.execute(text(query))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
 
 if __name__ == '__main__':
     app.run(debug=True)

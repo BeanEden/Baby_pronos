@@ -31,19 +31,21 @@ Vous souhaitez héberger votre propre version de Baby Pronos gratuitement ? Voic
 1. Créez un compte sur [GitHub](https://github.com/) (si ce n'est pas déjà fait).
 2. **Forkez** ce dépôt : cliquez sur le bouton **"Fork"** en haut à droite de cette page GitHub. Cela va créer une copie exacte du projet sur votre propre compte, que vous pourrez modifier et lier à Vercel sans affecter l'original.
 
-### 2. Créer une Base de Données PostgreSQL
-1. Créez un compte gratuit sur un fournisseur PostgreSQL comme [Supabase](https://supabase.com/) ou [Neon](https://neon.tech/).
-2. Créez un nouveau projet/base de données.
-3. Récupérez l'URL de connexion (de type `postgresql://user:password@host:port/dbname`). 
-*(Note: Si vous utilisez Supabase, veillez à utiliser le port de transaction adapté ou ajoutez `?sslmode=require` si nécessaire).*
-
-### 3. Déployer sur Vercel
+### 2. Déployer sur Vercel
 1. Créez un compte gratuit sur [Vercel](https://vercel.com/) et connectez-y votre compte GitHub.
 2. Cliquez sur **Add New... > Project** et importez votre dépôt GitHub "Baby Pronos".
-3. Dans la section **Environment Variables** (avant de cliquer sur Deploy), ajoutez les deux variables suivantes :
-   - `DATABASE_URL` : Collez l'URL de connexion PostgreSQL générée à l'étape 2.
-   - `SECRET_KEY` : Saisissez une phrase secrète complexe (ex: `ma_clef_secrete_12345!`). Elle est indispensable pour sécuriser les mots de passe.
-4. Cliquez sur **Deploy** et patientez.
+3. Dans la section **Environment Variables** (avant de cliquer sur Deploy), ajoutez la variable suivante :
+   - `SECRET_KEY` : Saisissez une phrase secrète complexe (ex: `ma_clef_secrete_12345!`). Elle est indispensable pour sécuriser les mots de passe de vos participants.
+4. Cliquez sur **Deploy**. (Le déploiement va se terminer, mais le site ne fonctionnera pas encore car il n'a pas de base de données).
+
+### 3. Activer la Base de Données (Vercel Storage)
+Vercel propose des bases de données gratuites intégrées.
+1. Depuis le tableau de bord de votre projet Vercel, allez dans l'onglet **Storage**.
+2. Cliquez sur **Create Database** et choisissez **Postgres**.
+3. Acceptez les conditions, donnez un nom à votre base (ex: *baby-pronos-db*) et choisissez la région la plus proche de chez vous (ex: Frankfurt ou Paris).
+4. Une fois créée, cliquez sur **Connect Project** pour lier la base de données à votre projet Baby Pronos.
+5. Vercel a désormais automatiquement ajouté la variable `POSTGRES_URL` à votre projet !
+6. Allez dans l'onglet **Deployments** de votre projet Vercel, cliquez sur les trois petits points à côté de votre dernier déploiement, et choisissez **Redeploy**.
 
 ### 4. Initialisation Automatique
 Lors de la toute première ouverture de votre site web généré par Vercel :

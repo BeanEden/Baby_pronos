@@ -113,6 +113,11 @@ class FormConfig(db.Model):
     
     # Home page config
     welcome_message = db.Column(db.Text, nullable=True)
+    
+    # Custom Colors
+    color_primary = db.Column(db.String(7), default='#0a0089')
+    color_secondary = db.Column(db.String(7), default='#b99000')
+    color_bg = db.Column(db.String(7), default='#fbf5da')
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -229,6 +234,11 @@ class FormConfigForm(FlaskForm):
     enable_table_page = BooleanField('Activer la page Tableau public')
     guess_deadline = DateTimeLocalField('Date butoir des pronostics (Optionnel)', format='%Y-%m-%dT%H:%M', validators=[Optional()])
     welcome_message = TextAreaField('Message de bienvenue')
+    
+    # Custom Colors
+    color_primary = StringField('Couleur Principale (Textes, boutons importants)', render_kw={'type': 'color'})
+    color_secondary = StringField('Couleur Secondaire (Boutons secondaires, accents)', render_kw={'type': 'color'})
+    color_bg = StringField('Couleur de Fond (Arrière-plan)', render_kw={'type': 'color'})
     
     submit_config = SubmitField('Enregistrer la configuration')
 
@@ -459,6 +469,9 @@ def admin_info():
         form_config.guess_deadline = config_form.guess_deadline.data
         form_config.welcome_message = config_form.welcome_message.data
         
+        form_config.color_primary = config_form.color_primary.data
+        form_config.color_secondary = config_form.color_secondary.data
+        form_config.color_bg = config_form.color_bg.data
         db.session.commit()
         flash('Configuration du formulaire mise à jour.', 'success')
         return redirect(url_for('admin_info'))
@@ -501,6 +514,9 @@ def admin_info():
         config_form.guess_deadline.data = form_config.guess_deadline
         config_form.welcome_message.data = form_config.welcome_message
         
+        config_form.color_primary.data = form_config.color_primary
+        config_form.color_secondary.data = form_config.color_secondary
+        config_form.color_bg.data = form_config.color_bg
     scoring_rules = ScoringRule.query.all()
         
     return render_template('admin_info.html', form=clue_form, date_form=date_form, config_form=config_form, scoring_rule_form=scoring_rule_form, clues=clues, themes=themes, scoring_rules=scoring_rules)
@@ -1326,6 +1342,9 @@ with app.app_context():
         "ALTER TABLE form_config ADD COLUMN lock_sex BOOLEAN DEFAULT false",
         "ALTER TABLE form_config ADD COLUMN anonymous_mode BOOLEAN DEFAULT false",
         "ALTER TABLE form_config ADD COLUMN guess_deadline TIMESTAMP",
+        "ALTER TABLE form_config ADD COLUMN color_primary VARCHAR(7) DEFAULT '#0a0089'",
+        "ALTER TABLE form_config ADD COLUMN color_secondary VARCHAR(7) DEFAULT '#b99000'",
+        "ALTER TABLE form_config ADD COLUMN color_bg VARCHAR(7) DEFAULT '#fbf5da'",
     ]
     for query in migrations:
         try:

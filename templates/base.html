@@ -6,6 +6,24 @@
     <title>Pronostics Bébé</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {% if config and (config.color_primary or config.color_secondary or config.color_bg) %}
+    <style>
+        :root {
+            {% if config.color_primary %}
+            --primary-color: {{ config.color_primary }};
+            --text-main: {{ config.color_primary }};
+            --accent-secondary: {{ config.color_primary }};
+            {% endif %}
+            {% if config.color_secondary %}
+            --secondary-color: {{ config.color_secondary }};
+            --accent-color: {{ config.color_secondary }};
+            {% endif %}
+            {% if config.color_bg %}
+            --bg-color: {{ config.color_bg }};
+            {% endif %}
+        }
+    </style>
+    {% endif %}
     {% block head %}{% endblock %}
 </head>
 <body>

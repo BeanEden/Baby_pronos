@@ -200,6 +200,29 @@
                 </div>
             </div>
         </div>
+        
+        <h4 style="margin-top: 2rem; margin-bottom: 1rem; color: var(--primary-color); border-bottom: 2px solid var(--primary-color); padding-bottom: 5px;">🎨 Personnalisation des Couleurs</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 20px; background: rgba(0,0,0,0.02); padding: 15px; border-radius: 12px; margin-bottom: 1.5rem;">
+            <div class="form-group" style="flex: 1; min-width: 200px;">
+                {{ config_form.color_primary.label(style="font-weight:bold; font-size: 0.9em; display:block; margin-bottom: 8px;") }}
+                <div style="display:flex; align-items:center; gap: 10px;">
+                    {{ config_form.color_primary(style="width: 50px; height: 50px; padding: 0; border: none; cursor: pointer; border-radius: 8px;") }}
+                </div>
+            </div>
+            <div class="form-group" style="flex: 1; min-width: 200px;">
+                {{ config_form.color_secondary.label(style="font-weight:bold; font-size: 0.9em; display:block; margin-bottom: 8px;") }}
+                <div style="display:flex; align-items:center; gap: 10px;">
+                    {{ config_form.color_secondary(style="width: 50px; height: 50px; padding: 0; border: none; cursor: pointer; border-radius: 8px;") }}
+                </div>
+            </div>
+            <div class="form-group" style="flex: 1; min-width: 200px;">
+                {{ config_form.color_bg.label(style="font-weight:bold; font-size: 0.9em; display:block; margin-bottom: 8px;") }}
+                <div style="display:flex; align-items:center; gap: 10px;">
+                    {{ config_form.color_bg(style="width: 50px; height: 50px; padding: 0; border: none; cursor: pointer; border-radius: 8px;") }}
+                </div>
+            </div>
+        </div>
+
         <div class="form-group" style="margin-top: 1.5rem;">
             <div style="font-weight: bold; margin-bottom: 0.5rem; color: var(--primary-color);">
                 {{ config_form.prize_text.label }}

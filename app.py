@@ -11,7 +11,7 @@ from datetime import datetime
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'my_super_secret_key_baby_shower')
 
-database_url = os.environ.get('DATABASE_URL', 'sqlite:///baby_shower.db')
+database_url = os.environ.get('DATABASE_URL') or os.environ.get('POSTGRES_URL') or 'sqlite:///baby_shower.db'
 if database_url.startswith('postgres://'):
     database_url = database_url.replace('postgres://', 'postgresql://', 1)
 
@@ -73,6 +73,22 @@ class Guess(db.Model):
     eye_color = db.Column(db.String(100), nullable=True)
     hair_color = db.Column(db.String(100), nullable=True)
     is_hidden = db.Column(db.Boolean, default=False)
+
+class SiteLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    level = db.Column(db.String(20), default='INFO')
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    message = db.Column(db.Text, nullable=False)
+    user_rel = db.relationship('User', backref='logs')
+
+def log_event(message, level='INFO', user_id=None):
+    try:
+        new_log = SiteLog(message=message, level=level, user_id=user_id)
+        db.session.add(new_log)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
 
 class FormConfig(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -1236,6 +1252,48 @@ def admin_results():
         }
 
     return render_template('results.html', form=form, results=results)
+
+
+@app.route('/admin/logs')
+@login_required
+def admin_logs():
+    if not current_user.is_admin:
+        flash('Accès refusé.', 'danger')
+        return redirect(url_for('index'))
+    logs = SiteLog.query.order_by(SiteLog.timestamp.desc()).limit(500).all()
+    return render_template('admin_logs.html', logs=logs)
+
+@app.route('/admin/logs/export')
+@login_required
+def export_logs_csv():
+    if not current_user.is_admin:
+        flash('Accès refusé.', 'danger')
+        return redirect(url_for('index'))
+    
+    logs = SiteLog.query.order_by(SiteLog.timestamp.desc()).all()
+    
+    si = StringIO()
+    cw = csv.writer(si)
+    cw.writerow(['ID', 'Date', 'Heure', 'Niveau', 'Utilisateur', 'Message'])
+    
+    for l in logs:
+        cw.writerow([
+            l.id,
+            l.timestamp.strftime('%Y-%m-%d'),
+            l.timestamp.strftime('%H:%M:%S'),
+            l.level,
+            l.user_rel.username if l.user_rel else 'Système',
+            l.message
+        ])
+    
+    output = si.getvalue()
+    si.close()
+    
+    return Response(
+        output,
+        mimetype="text/csv",
+        headers={"Content-disposition": "attachment; filename=logs_site.csv"}
+    )
 
 @app.route('/admin/simulator')
 @login_required

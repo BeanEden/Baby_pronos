@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Logs Système - Baby Pronos{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 1000px; margin: 0 auto; overflow: hidden;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h2 style="margin: 0;">📜 Logs Système</h2>
+        <a href="{{ url_for('export_logs_csv') }}" class="btn btn-primary" style="text-decoration: none;">📥 Exporter en CSV</a>
+    </div>
+
+    <div style="overflow-x: auto;">
+        <table class="table" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--border-color);">
+                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text-muted);">Date & Heure</th>
+                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text-muted);">Utilisateur</th>
+                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text-muted);">Message</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 1rem; white-space: nowrap; color: var(--text-color);">
+                        {{ log.timestamp.strftime('%d/%m/%Y %H:%M:%S') }}
+                    </td>
+                    <td style="padding: 1rem;">
+                        {% if log.user_rel %}
+                            <span style="font-weight: 500; color: var(--primary-color);">{{ log.user_rel.username }}</span>
+                        {% else %}
+                            <span style="color: var(--text-muted); font-style: italic;">Système</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 1rem; color: var(--text-color);">
+                        {{ log.message }}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" style="padding: 2rem; text-align: center; color: var(--text-muted);">
+                        Aucun log disponible pour le moment.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

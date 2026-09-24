@@ -18,6 +18,63 @@
         border-radius: 8px;
         padding: 0.3rem;
     }
+    
+    details.accordion {
+        background: #ffffff;
+        border: 2px solid rgba(0,0,0,0.08);
+        border-left: 6px solid var(--primary-color);
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+    details.accordion:hover {
+        border-color: var(--primary-color);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+    details.accordion summary {
+        padding: 1.5rem;
+        font-size: 1.25rem;
+        font-weight: 700;
+        cursor: pointer;
+        background: #ffffff;
+        list-style: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: var(--text-main);
+        transition: background 0.3s, color 0.3s;
+    }
+    details.accordion summary:hover {
+        background: rgba(0,0,0,0.02);
+        color: var(--primary-color);
+    }
+    details.accordion summary::-webkit-details-marker {
+        display: none;
+    }
+    details.accordion summary::after {
+        content: "▼";
+        font-size: 0.9rem;
+        transition: transform 0.3s;
+        background: var(--primary-color);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 8px;
+    }
+    details[open].accordion summary {
+        border-bottom: 1px solid rgba(0,0,0,0.08);
+        color: var(--primary-color);
+    }
+    details[open].accordion summary::after {
+        transform: rotate(180deg);
+        background: var(--secondary-color);
+    }
+    details.accordion .accordion-content {
+        padding: 2rem 1.5rem;
+        background: rgba(255,255,255,0.5);
+    }
 </style>
 {% endblock %}
 
@@ -397,10 +454,8 @@
         {% endif %}
     </div>
 
-    </div>
-</details>
-
-    <form method="POST" action="" class="custom-form">
+        <h4 style="margin-top: 2rem; margin-bottom: 1rem; color: var(--primary-color); border-bottom: 2px solid var(--primary-color); padding-bottom: 5px;">Ajouter un nouvel indice</h4>
+        <form method="POST" action="" class="custom-form" style="background: rgba(0,0,0,0.02); padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem;">
         {{ form.hidden_tag() }}
         
         {% if form.errors %}
@@ -443,7 +498,7 @@
         <div class="form-group submit-group full-width">
             {{ form.submit_clue(class="btn-primary full-width large-btn") }}
         </div>
-    </form>
+        </form>
     </div>
 </details>
 </div>

@@ -479,7 +479,7 @@
         filteredData.forEach(d => {
             if (d[field] != null) {
                 let val = d[field];
-                let bIdx = Math.floor((val - minVal) / binSize);
+                let bIdx = Math.floor(Math.round((val - minVal) / binSize * 1000) / 1000);
                 if (bIdx >= bins.length) bIdx = bins.length - 1;
                 if (bIdx < 0) bIdx = 0;
                 

@@ -25,7 +25,15 @@
 {% block content %}
 <div class="form-container">
     <h2>{% if existing %}Modifier{% else %}Faire{% endif %} votre pronostic</h2>
-    <p class="form-subtitle">Laissez-vous guider par votre intuition !</p>
+    <p class="form-subtitle">Laissez-vous guider par votre intuition !<br>
+    <span style="font-size: 0.9em; opacity: 0.8;">
+    {% if config.guess_deadline %}
+        Vous pourrez modifier votre pronostic par la suite jusqu'au <strong>{{ config.guess_deadline.strftime('%d/%m/%Y à %H:%M') }}</strong>.
+    {% else %}
+        Vous pourrez modifier votre pronostic à tout moment par la suite.
+    {% endif %}
+    </span>
+    </p>
     
     {% if config.guess_deadline %}
     <div style="background: rgba(214, 48, 49, 0.1); padding: 1rem; border-radius: 8px; border: 2px dashed #ff7675; margin-bottom: 1.5rem; text-align: center;">

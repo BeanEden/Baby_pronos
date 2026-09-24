@@ -29,7 +29,7 @@ Vous souhaitez héberger votre propre version de Baby Pronos gratuitement ? Voic
 
 ### 1. Préparer le code
 1. Créez un compte sur [GitHub](https://github.com/) (si ce n'est pas déjà fait).
-2. **Forkez** ce dépôt (ou dupliquez-le) sur votre propre compte GitHub pour en avoir votre propre copie.
+2. **Forkez** ce dépôt : cliquez sur le bouton **"Fork"** en haut à droite de cette page GitHub. Cela va créer une copie exacte du projet sur votre propre compte, que vous pourrez modifier et lier à Vercel sans affecter l'original.
 
 ### 2. Créer une Base de Données PostgreSQL
 1. Créez un compte gratuit sur un fournisseur PostgreSQL comme [Supabase](https://supabase.com/) ou [Neon](https://neon.tech/).

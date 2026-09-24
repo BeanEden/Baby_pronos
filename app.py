@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, redirect, url_for, flash, request
+from flask import Flask, render_template, redirect, url_for, flash, request, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -264,7 +264,6 @@ def public_table():
 @login_required
 def toggle_view():
     if current_user.is_admin:
-        from flask import session
         session['view_as_user'] = not session.get('view_as_user', False)
     return redirect(request.referrer or url_for('public_table'))
 

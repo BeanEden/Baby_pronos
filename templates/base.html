@@ -43,7 +43,6 @@
                 {% if current_user.is_admin %}
                     <a href="{{ url_for('admin_info') }}" class="nav-item">Admin</a>
                     <a href="{{ url_for('admin_users') }}" class="nav-item">Utilisateurs</a>
-                    <a href="{{ url_for('admin_logs') }}" class="nav-item">Logs</a>
                     <a href="{{ url_for('admin_results') }}" class="nav-item" style="color: #6c5ce7; font-weight: bold;">Calculateur</a>
                     <a href="{{ url_for('admin_simulator') }}" class="nav-item" style="color: #00b894; font-weight: bold;">Simulateur</a>
                 {% endif %}

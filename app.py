@@ -534,8 +534,9 @@ def admin_info():
         config_form.color_secondary.data = form_config.color_secondary
         config_form.color_bg.data = form_config.color_bg
     scoring_rules = ScoringRule.query.all()
+    logs = SiteLog.query.order_by(SiteLog.timestamp.desc()).limit(100).all()
         
-    return render_template('admin_info.html', form=clue_form, date_form=date_form, config_form=config_form, scoring_rule_form=scoring_rule_form, clues=clues, themes=themes, scoring_rules=scoring_rules)
+    return render_template('admin_info.html', form=clue_form, date_form=date_form, config_form=config_form, scoring_rule_form=scoring_rule_form, clues=clues, themes=themes, scoring_rules=scoring_rules, logs=logs)
 
 @app.route('/admin/info/delete/<int:clue_id>', methods=['POST'])
 @login_required
@@ -1254,14 +1255,7 @@ def admin_results():
     return render_template('results.html', form=form, results=results)
 
 
-@app.route('/admin/logs')
-@login_required
-def admin_logs():
-    if not current_user.is_admin:
-        flash('Accès refusé.', 'danger')
-        return redirect(url_for('index'))
-    logs = SiteLog.query.order_by(SiteLog.timestamp.desc()).limit(500).all()
-    return render_template('admin_logs.html', logs=logs)
+
 
 @app.route('/admin/logs/export')
 @login_required

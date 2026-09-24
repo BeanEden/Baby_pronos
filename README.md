@@ -2,6 +2,8 @@
 
 Une application web interactive et ludique permettant à vos proches de faire des pronostics sur la naissance de votre futur bébé (date, heure, sexe, taille, poids, etc.).
 
+<a href="images_git_hub/accueil.png"><img src="images_git_hub/accueil.png" width="800"></a>
+
 ## Fonctionnalités 🌟
 
 - **Pronostics complets** : Les participants peuvent deviner de nombreuses caractéristiques (sexe, date, heure, prénom, taille, poids, couleurs des yeux/cheveux/peau).
@@ -30,21 +32,29 @@ Vous souhaitez héberger votre propre version de Baby Pronos gratuitement ? Voic
 ### 1. Préparer le code
 1. Créez un compte sur [GitHub](https://github.com/) (si ce n'est pas déjà fait).
 2. **Forkez** ce dépôt : cliquez sur le bouton **"Fork"** en haut à droite de cette page GitHub. Cela va créer une copie exacte du projet sur votre propre compte, que vous pourrez modifier et lier à Vercel sans affecter l'original.
+   <br><a href="images_git_hub/fork_button.png"><img src="images_git_hub/fork_button.png" width="300"></a>
 
 ### 2. Déployer sur Vercel
 1. Créez un compte gratuit sur [Vercel](https://vercel.com/) et connectez-y votre compte GitHub.
 2. Cliquez sur **Add New... > Project** et importez votre dépôt GitHub "Baby Pronos".
+   <br><a href="images_git_hub/vercel_init.png"><img src="images_git_hub/vercel_init.png" width="300"></a>
 3. Dans la section **Environment Variables** (avant de cliquer sur Deploy), ajoutez la variable suivante :
    - `SECRET_KEY` : Saisissez une phrase secrète complexe (ex: `ma_clef_secrete_12345!`). Elle est indispensable pour sécuriser les mots de passe de vos participants.
+   <br><a href="images_git_hub/vercel_init_environment%20variable.png"><img src="images_git_hub/vercel_init_environment%20variable.png" width="300"></a>
 4. Cliquez sur **Deploy**. (Le déploiement va se terminer, mais le site ne fonctionnera pas encore car il n'a pas de base de données).
 
 ### 3. Activer la Base de Données (Vercel Storage)
 Vercel propose des bases de données gratuites intégrées.
 1. Depuis le tableau de bord de votre projet Vercel, allez dans l'onglet **Storage**.
+   <br><a href="images_git_hub/vercel_storage.png"><img src="images_git_hub/vercel_storage.png" width="300"></a>
 2. Cliquez sur **Create Database** et choisissez **Postgres**.
+   <br><a href="images_git_hub/vercel_storage_2.png"><img src="images_git_hub/vercel_storage_2.png" width="300"></a>
 3. Acceptez les conditions, donnez un nom à votre base (ex: *baby-pronos-db*) et choisissez la région la plus proche de chez vous (ex: Frankfurt ou Paris).
+   <br><a href="images_git_hub/vercel_storage_3.png"><img src="images_git_hub/vercel_storage_3.png" width="300"></a>
 4. Une fois créée, cliquez sur **Connect Project** pour lier la base de données à votre projet Baby Pronos.
+   <br><a href="images_git_hub/vercel_storage_4.png"><img src="images_git_hub/vercel_storage_4.png" width="300"></a>
 5. Vercel a désormais automatiquement ajouté la variable `POSTGRES_URL` à votre projet !
+   <br><a href="images_git_hub/vercel_storage_5.png"><img src="images_git_hub/vercel_storage_5.png" width="300"></a>
 6. Allez dans l'onglet **Deployments** de votre projet Vercel, cliquez sur les trois petits points à côté de votre dernier déploiement, et choisissez **Redeploy**.
 
 ### 4. Initialisation Automatique

@@ -26,9 +26,11 @@
     <h2>Administration : Gérer les indices</h2>
     <p class="form-subtitle">Ces informations seront visibles par tous les participants pour les aider.</p>
 
+<details class="accordion">
+<summary>💾 Sauvegarde & Restauration</summary>
+<div class="accordion-content">
     <!-- Sauvegarde & Restauration -->
     <div style="background: rgba(108, 92, 231, 0.05); border: 1px solid rgba(108, 92, 231, 0.2); padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem;">
-        <h3 style="margin-top: 0; color: #6c5ce7; display: flex; align-items: center; gap: 8px;">💾 Sauvegarde & Restauration</h3>
         <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem;">Exportez tous les pronostics et utilisateurs au format CSV pour faire une sauvegarde, ou importez un fichier CSV pour restaurer vos données.</p>
         
         <div class="two-columns" style="align-items: center;">
@@ -46,9 +48,12 @@
         </div>
     </div>
     
-    <hr style="border: 0; height: 1px; background: rgba(0,0,0,0.1); margin-bottom: 2rem;">
+    </div>
+</details>
     
-    <h3>Informations générales</h3>
+<details class="accordion">
+<summary>👶 Informations générales du bébé</summary>
+<div class="accordion-content">
     <form method="POST" action="" class="custom-form" style="margin-bottom: 2rem; background: rgba(255,255,255,0.4); padding: 1.5rem; border-radius: 12px;">
         {{ date_form.hidden_tag() }}
         
@@ -78,9 +83,12 @@
         </div>
     </form>
 
-    <hr style="border: 0; height: 1px; background: rgba(0,0,0,0.1); margin-bottom: 2rem;">
+    </div>
+</details>
 
-    <h3>Configuration du Formulaire "Mon Pronostic"</h3>
+<details class="accordion" open>
+<summary>⚙️ Configuration globale (Formulaire, Tableau, Couleurs)</summary>
+<div class="accordion-content">
     <form method="POST" action="" class="custom-form" style="margin-bottom: 2rem; background: rgba(255,255,255,0.4); padding: 1.5rem; border-radius: 12px;">
         {{ config_form.hidden_tag() }}
         <p class="form-subtitle" style="text-align: left; margin-bottom: 1rem;">Cochez les champs que vous souhaitez afficher dans le formulaire :</p>
@@ -240,8 +248,12 @@
         </div>
     </form>
 
-    <hr style="border: 0; height: 1px; background: rgba(0,0,0,0.1); margin-bottom: 2rem;">
+    </div>
+</details>
     
+<details class="accordion">
+<summary>💯 Barème de points</summary>
+<div class="accordion-content">
     <div style="margin-bottom: 3rem;">
         <h3>Barème de points (Règles structurées)</h3>
         
@@ -325,8 +337,12 @@
         </form>
     </div>
 
-    <hr style="border: 0; height: 1px; background: rgba(0,0,0,0.1); margin-bottom: 2rem;">
+    </div>
+</details>
     
+<details class="accordion">
+<summary>💡 Gestion des indices</summary>
+<div class="accordion-content">
     <div style="margin-bottom: 3rem;">
         <h3>Indices existants</h3>
         
@@ -381,9 +397,9 @@
         {% endif %}
     </div>
 
-    <hr style="border: 0; height: 1px; background: rgba(0,0,0,0.1); margin-bottom: 2rem;">
+    </div>
+</details>
 
-    <h3>Ajouter un nouvel indice</h3>
     <form method="POST" action="" class="custom-form">
         {{ form.hidden_tag() }}
         
@@ -428,6 +444,8 @@
             {{ form.submit_clue(class="btn-primary full-width large-btn") }}
         </div>
     </form>
+    </div>
+</details>
 </div>
 {% endblock %}
 

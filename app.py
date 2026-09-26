@@ -1,3 +1,7 @@
+"""
+Module principal de l'application Baby Shower.
+Contient les modèles de base de données, les formulaires Web et les routes pour gérer les pronostics, les utilisateurs et l'administration.
+"""
 import os
 from flask import Flask, render_template, redirect, url_for, flash, request, session
 from flask_sqlalchemy import SQLAlchemy
@@ -24,6 +28,7 @@ login_manager.login_view = 'login'
 
 # Models
 class User(UserMixin, db.Model):
+    """Modèle de base de données représentant un utilisateur (participant ou admin)."""
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
@@ -32,12 +37,14 @@ class User(UserMixin, db.Model):
     guess = db.relationship('Guess', backref='user', uselist=False)
 
 class BabyInfo(db.Model):
+    """Modèle stockant les informations réelles du bébé (terme, sexe, etc.)."""
     id = db.Column(db.Integer, primary_key=True)
     due_date = db.Column(db.Date, nullable=True)
     time_of_birth = db.Column(db.Time, nullable=True)
     sex = db.Column(db.String(50), nullable=True)
 
 class Clue(db.Model):
+    """Modèle représentant un indice donné aux participants."""
     id = db.Column(db.Integer, primary_key=True)
     theme = db.Column(db.String(150), nullable=False)
     value = db.Column(db.String(255), nullable=False)
@@ -45,6 +52,7 @@ class Clue(db.Model):
     relative_name = db.Column(db.String(150), nullable=True) # e.g. Maman, Soeur du père
 
 class ScoringRule(db.Model):
+    """Modèle définissant les règles de calcul des points pour le classement."""
     id = db.Column(db.Integer, primary_key=True)
     category = db.Column(db.String(50), nullable=False)
     base_points = db.Column(db.Integer, nullable=False)
@@ -52,6 +60,7 @@ class ScoringRule(db.Model):
     exact_bonus = db.Column(db.Integer, default=0, nullable=False)
 
 class Guess(db.Model):
+    """Modèle représentant le pronostic d'un participant."""
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     dob = db.Column(db.Date, nullable=False)
@@ -75,6 +84,7 @@ class Guess(db.Model):
     is_hidden = db.Column(db.Boolean, default=False)
 
 class SiteLog(db.Model):
+    """Modèle stockant l'historique des actions (logs) de l'application."""
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     level = db.Column(db.String(20), default='INFO')
@@ -83,6 +93,12 @@ class SiteLog(db.Model):
     user_rel = db.relationship('User', backref='logs')
 
 def log_event(message, level='INFO', user_id=None):
+    """
+        Enregistre un événement dans la table SiteLog.
+        :param message: Le message à logger.
+        :param level: Niveau d'alerte (INFO, WARNING, etc.).
+        :param user_id: ID de l'utilisateur concerné (optionnel).
+        """
     try:
         new_log = SiteLog(message=message, level=level, user_id=user_id)
         db.session.add(new_log)
@@ -91,6 +107,7 @@ def log_event(message, level='INFO', user_id=None):
         db.session.rollback()
 
 class FormConfig(db.Model):
+    """Modèle stockant la configuration globale (visibilité, affichage, couleurs)."""
     id = db.Column(db.Integer, primary_key=True)
     show_dob = db.Column(db.Boolean, default=True)
     show_time = db.Column(db.Boolean, default=True)
@@ -137,10 +154,12 @@ class FormConfig(db.Model):
 
 @login_manager.user_loader
 def load_user(user_id):
+    """Charge un utilisateur depuis la session pour Flask-Login."""
     return User.query.get(int(user_id))
 
 # Forms
 class RegistrationForm(FlaskForm):
+    """Formulaire d'inscription pour les nouveaux utilisateurs."""
     first_name = StringField('Prénom', validators=[DataRequired()])
     last_name = StringField('Nom', validators=[DataRequired()])
     password = PasswordField('Mot de passe', validators=[DataRequired()])
@@ -149,12 +168,14 @@ class RegistrationForm(FlaskForm):
     submit = SubmitField('S\'inscrire')
 
 class LoginForm(FlaskForm):
+    """Formulaire de connexion."""
     first_name = StringField('Prénom', validators=[DataRequired()])
     last_name = StringField('Nom', validators=[DataRequired()])
     password = PasswordField('Mot de passe', validators=[DataRequired()])
     submit = SubmitField('Se connecter')
 
 class GuessForm(FlaskForm):
+    """Formulaire de saisie d'un pronostic pour le bébé."""
     dob = DateField('Date de naissance (estimée)', format='%Y-%m-%d', validators=[DataRequired(message="La date de naissance est obligatoire")])
     time_of_birth = TimeField('Heure (optionnel)', format='%H:%M', validators=[Optional()])
     sex = SelectField('Sexe', choices=[('Fille', 'Fille'), ('Garçon', 'Garçon'), ('Surprise', 'Surprise')], validators=[Optional()])
@@ -176,19 +197,22 @@ class GuessForm(FlaskForm):
     submit = SubmitField('Enregistrer le pronostic')
 
 class ClueForm(FlaskForm):
+    """Formulaire d'ajout et de modification d'un indice (admin)."""
     theme = StringField('Thème (ex: Prénom, Couleur des yeux, ...)', validators=[DataRequired()])
     value = StringField('Valeur', validators=[DataRequired()])
-    relation_link = SelectField('Lien de parenté', choices=[('', '---'), ('Parents', 'Parents'), ('Grands-parents', 'Grands-parents'), ('Oncles/Tantes', 'Oncles/Tantes'), ('Cousins', 'Cousins'), ('Autre', 'Autre')], validators=[Optional()])
+    relation_link = SelectField('Lien de parenté', choices=[('', '---'), ('Parents', 'Parents'), ('Frères/soeurs', 'Frères/soeurs'), ('Grands-parents', 'Grands-parents'), ('Oncles/Tantes', 'Oncles/Tantes'), ('Cousins', 'Cousins'), ('Autre', 'Autre')], validators=[Optional()])
     relative_name = StringField('Parent associé (ex: Maman, Sœur du père)', validators=[Optional()])
     submit_clue = SubmitField('Ajouter l\'indice')
 
 class DueDateForm(FlaskForm):
+    """Formulaire pour mettre à jour les informations de naissance (admin)."""
     due_date = DateField('Terme prévu', format='%Y-%m-%d', validators=[Optional()])
     due_time = TimeField('Heure', format='%H:%M', validators=[Optional()])
     sex = SelectField('Sexe du bébé', choices=[('', '---'), ('Fille', 'Fille'), ('Garçon', 'Garçon')], validators=[Optional()])
     submit_date = SubmitField('Mettre à jour les informations')
 
 class ScoringRuleForm(FlaskForm):
+    """Formulaire de paramétrage du barème de points (admin)."""
     category = SelectField('Catégorie', choices=[
         ('Date prévue', 'Date prévue'),
         ('Sexe', 'Sexe'),
@@ -217,6 +241,7 @@ class CalculatorForm(FlaskForm):
     submit = SubmitField('Calculer les résultats')
 
 class FormConfigForm(FlaskForm):
+    """Formulaire de configuration globale de l'application (admin)."""
     show_dob = BooleanField('Date de naissance')
     show_time = BooleanField('Heure')
     show_sex = BooleanField('Sexe')
@@ -260,6 +285,7 @@ class FormConfigForm(FlaskForm):
 
 @app.context_processor
 def inject_config():
+    """Injecte la configuration globale dans tous les templates Jinja2."""
     form_config = FormConfig.query.first()
     if not form_config:
         form_config = FormConfig()
@@ -267,11 +293,13 @@ def inject_config():
 
 @app.route('/')
 def index():
+    """Affiche la page d'accueil et gère la création/mise à jour d'un pronostic."""
     return render_template('home.html')
 
 @app.route('/table')
 @login_required
 def public_table():
+    """Affiche le tableau public des pronostics de tous les participants."""
     form_config = FormConfig.query.first()
     if not form_config:
         form_config = FormConfig()
@@ -289,6 +317,7 @@ def public_table():
 @app.route('/admin/toggle_view')
 @login_required
 def toggle_view():
+    """Bascule l'affichage des pronostics (liste ou grille) dans la session."""
     if current_user.is_admin:
         session['view_as_user'] = not session.get('view_as_user', False)
     return redirect(request.referrer or url_for('public_table'))
@@ -296,6 +325,7 @@ def toggle_view():
 @app.route('/admin/guess/hide/<int:guess_id>')
 @login_required
 def toggle_hide_guess(guess_id):
+    """Permet à l'admin de masquer ou d'afficher un pronostic public."""
     if not current_user.is_admin:
         return redirect(url_for('index'))
     guess = Guess.query.get_or_404(guess_id)
@@ -307,6 +337,7 @@ def toggle_hide_guess(guess_id):
 @app.route('/admin/guess/delete/<int:guess_id>', methods=['POST'])
 @login_required
 def delete_guess(guess_id):
+    """Permet à l'admin de supprimer le pronostic d'un utilisateur."""
     if not current_user.is_admin:
         return redirect(url_for('index'))
     guess = Guess.query.get_or_404(guess_id)
@@ -318,6 +349,7 @@ def delete_guess(guess_id):
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    """Gère l'inscription d'un nouvel utilisateur."""
     if current_user.is_authenticated:
         return redirect(url_for('index'))
     form = RegistrationForm()
@@ -343,6 +375,7 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """Gère la connexion d'un utilisateur."""
     if current_user.is_authenticated:
         return redirect(url_for('index'))
     form = LoginForm()
@@ -360,12 +393,14 @@ def login():
 @app.route('/logout')
 @login_required
 def logout():
+    """Déconnecte l'utilisateur actuel."""
     logout_user()
     return redirect(url_for('index'))
 
 @app.route('/info')
 @login_required
 def info():
+    """Affiche la liste des indices publics et les informations sur le bébé."""
     baby_info = BabyInfo.query.first()
     clues = Clue.query.all()
     # Group clues by theme
@@ -395,6 +430,7 @@ def info():
 @app.route('/admin/info', methods=['GET', 'POST'])
 @login_required
 def admin_info():
+    """Tableau de bord d'administration : configuration, logs, règles, et indices."""
     if not current_user.is_admin:
         flash('Accès non autorisé.', 'danger')
         return redirect(url_for('index'))
@@ -728,6 +764,7 @@ from datetime import datetime
 @app.route('/admin/export/csv')
 @login_required
 def export_csv():
+    """Exporte tous les utilisateurs et pronostics en fichier CSV."""
     if not current_user.is_admin:
         flash('Accès refusé.', 'danger')
         return redirect(url_for('index'))
@@ -780,6 +817,7 @@ def export_csv():
 @app.route('/admin/import/csv', methods=['POST'])
 @login_required
 def import_csv():
+    """Importe et restaure les données (utilisateurs, pronostics) depuis un CSV."""
     if not current_user.is_admin:
         flash('Accès refusé.', 'danger')
         return redirect(url_for('index'))
@@ -1122,6 +1160,7 @@ def admin_reset_password(user_id):
 @app.route('/admin/results', methods=['GET', 'POST'])
 @login_required
 def admin_results():
+    """Affiche le classement final calculé d'après le barème et les informations du bébé."""
     if not current_user.is_admin:
         flash('Accès refusé.', 'danger')
         return redirect(url_for('index'))
@@ -1405,22 +1444,6 @@ with app.app_context():
         except Exception:
             db.session.rollback()
             
-    # Auto-create admin account
-    try:
-        from werkzeug.security import generate_password_hash
-        admin_username = "admin admin"
-        admin_user = User.query.filter_by(username=admin_username).first()
-        if not admin_user:
-            admin_user = User(
-                username=admin_username,
-                password_hash=generate_password_hash("123", method="pbkdf2:sha256"),
-                is_admin=True,
-                category="Famille"
-            )
-            db.session.add(admin_user)
-            db.session.commit()
-    except Exception:
-        db.session.rollback()
 
 if __name__ == '__main__':
     app.run(debug=True)

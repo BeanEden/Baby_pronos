@@ -231,6 +231,7 @@ class ScoringRuleForm(FlaskForm):
     submit_rule = SubmitField('Ajouter la règle')
 
 class CalculatorForm(FlaskForm):
+    """Formulaire (admin) pour simuler et tester le barème de points."""
     dob = DateField('Date de naissance réelle', format='%Y-%m-%d', validators=[DataRequired()])
     time_of_birth = TimeField('Heure de naissance réelle (optionnel)', format='%H:%M', validators=[Optional()])
     sex = SelectField('Sexe réel', choices=[('Fille', 'Fille'), ('Garçon', 'Garçon')], validators=[DataRequired()])
@@ -609,6 +610,7 @@ def admin_info():
 @app.route('/admin/info/delete/<int:clue_id>', methods=['POST'])
 @login_required
 def delete_clue(clue_id):
+    """Permet à l'admin de supprimer un indice existant."""
     if not current_user.is_admin:
         flash('Accès non autorisé.', 'danger')
         return redirect(url_for('index'))
@@ -622,6 +624,7 @@ def delete_clue(clue_id):
 @app.route('/admin/scoring/delete/<int:rule_id>', methods=['POST'])
 @login_required
 def delete_scoring_rule(rule_id):
+    """Permet à l'admin de supprimer une règle du barème de points."""
     if not current_user.is_admin:
         flash('Accès refusé.', 'danger')
         return redirect(url_for('index'))
@@ -634,6 +637,7 @@ def delete_scoring_rule(rule_id):
 @app.route('/admin/info/edit/<int:clue_id>', methods=['GET', 'POST'])
 @login_required
 def edit_clue(clue_id):
+    """Permet à l'admin de modifier un indice existant."""
     if not current_user.is_admin:
         flash('Accès non autorisé.', 'danger')
         return redirect(url_for('index'))
@@ -664,6 +668,7 @@ def edit_clue(clue_id):
 @app.route('/guess', methods=['GET', 'POST'])
 @login_required
 def guess():
+    """Gère l'affichage du formulaire et l'enregistrement d'un pronostic (création ou modification)."""
     form = GuessForm()
     existing_guess = Guess.query.filter_by(user_id=current_user.id).first()
     
@@ -777,6 +782,7 @@ def guess():
 @app.route('/stats')
 @login_required
 def stats():
+    """Affiche la page de statistiques globales sur les pronostics."""
     form_config = FormConfig.query.first()
     if not form_config:
         form_config = FormConfig()
@@ -986,6 +992,7 @@ def import_csv():
 @app.route('/admin/export/clues/csv')
 @login_required
 def export_clues_csv():
+    """Exporte tous les indices sous forme de fichier CSV."""
     if not current_user.is_admin:
         flash('Accès refusé.', 'danger')
         return redirect(url_for('index'))
@@ -1015,6 +1022,7 @@ def export_clues_csv():
 @app.route('/admin/import/clues/csv', methods=['POST'])
 @login_required
 def import_clues_csv():
+    """Importe des indices depuis un fichier CSV et met à jour la base de données."""
     if not current_user.is_admin:
         flash('Accès refusé.', 'danger')
         return redirect(url_for('index'))
@@ -1074,6 +1082,7 @@ def import_clues_csv():
 @app.route('/admin/export/scoring/csv')
 @login_required
 def export_scoring_csv():
+    """Exporte les règles du barème actuel sous forme de fichier CSV."""
     if not current_user.is_admin:
         flash('Accès refusé.', 'danger')
         return redirect(url_for('index'))
@@ -1103,6 +1112,7 @@ def export_scoring_csv():
 @app.route('/admin/import/scoring/csv', methods=['POST'])
 @login_required
 def import_scoring_csv():
+    """Importe un nouveau barème de points depuis un fichier CSV."""
     if not current_user.is_admin:
         flash('Accès refusé.', 'danger')
         return redirect(url_for('index'))
@@ -1165,6 +1175,7 @@ def import_scoring_csv():
 @app.route('/admin/users')
 @login_required
 def admin_users():
+    """Affiche le tableau de bord admin pour la gestion des utilisateurs."""
     if not current_user.is_admin:
         flash('Accès refusé.', 'danger')
         return redirect(url_for('index'))
@@ -1174,6 +1185,7 @@ def admin_users():
 @app.route('/admin/users/delete/<int:user_id>', methods=['POST'])
 @login_required
 def admin_delete_user(user_id):
+    """Permet à l'admin de supprimer un utilisateur du système."""
     if not current_user.is_admin:
         return redirect(url_for('index'))
     user = User.query.get_or_404(user_id)
@@ -1190,6 +1202,7 @@ def admin_delete_user(user_id):
 @app.route('/admin/users/reset_password/<int:user_id>', methods=['POST'])
 @login_required
 def admin_reset_password(user_id):
+    """Permet à l'admin de réinitialiser le mot de passe d'un utilisateur."""
     if not current_user.is_admin:
         return redirect(url_for('index'))
     user = User.query.get_or_404(user_id)
@@ -1345,6 +1358,7 @@ def admin_results():
 @app.route('/admin/logs/export')
 @login_required
 def export_logs_csv():
+    """Exporte l'historique d'activité (logs) sous forme de fichier CSV."""
     if not current_user.is_admin:
         flash('Accès refusé.', 'danger')
         return redirect(url_for('index'))
@@ -1377,6 +1391,7 @@ def export_logs_csv():
 @app.route('/admin/simulator')
 @login_required
 def admin_simulator():
+    """Outil de simulation (admin) pour visualiser le classement avec différentes configurations de résultats."""
     if not current_user.is_admin:
         flash('Accès refusé.', 'danger')
         return redirect(url_for('index'))

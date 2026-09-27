@@ -11,6 +11,8 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, DateField, SelectField, FloatField, TextAreaField, BooleanField, IntegerField, DateTimeLocalField, TimeField
 from wtforms.validators import DataRequired, EqualTo, Optional
 from datetime import datetime
+import unicodedata
+import difflib
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'my_super_secret_key_baby_shower')
@@ -382,12 +384,38 @@ def login():
     if form.validate_on_submit():
         username_val = f"{form.first_name.data.strip()} {form.last_name.data.strip()}"
         user = User.query.filter_by(username=username_val).first()
-        if user and check_password_hash(user.password_hash, form.password.data):
-            login_user(user)
-            flash('Connexion réussie.', 'success')
-            return redirect(url_for('index'))
+        
+        if user:
+            if check_password_hash(user.password_hash, form.password.data):
+                login_user(user)
+                flash('Connexion réussie.', 'success')
+                return redirect(url_for('index'))
+            else:
+                flash('Mot de passe incorrect.', 'danger')
         else:
-            flash('Échec de la connexion. Veuillez vérifier votre nom d\'utilisateur et votre mot de passe.', 'danger')
+            def normalize_string(s):
+                return ''.join(c for c in unicodedata.normalize('NFD', s.lower()) if unicodedata.category(c) != 'Mn')
+                
+            norm_input = normalize_string(username_val)
+            all_users = User.query.all()
+            
+            matched_user = next((u for u in all_users if normalize_string(u.username) == norm_input), None)
+            
+            if matched_user:
+                if check_password_hash(matched_user.password_hash, form.password.data):
+                    login_user(matched_user)
+                    flash('Connexion réussie (avec correction de casse/accents).', 'success')
+                    return redirect(url_for('index'))
+                else:
+                    flash(f'Nom trouvé ("{matched_user.username}") mais mot de passe incorrect.', 'danger')
+            else:
+                all_usernames = [u.username for u in all_users]
+                closest = difflib.get_close_matches(username_val, all_usernames, n=2, cutoff=0.6)
+                if closest:
+                    suggestions = " ou ".join([f'"{name}"' for name in closest])
+                    flash(f'Identifiant introuvable. Vouliez-vous dire {suggestions} ?', 'danger')
+                else:
+                    flash('Échec de la connexion. Veuillez vérifier votre prénom et nom.', 'danger')
     return render_template('login.html', form=form)
 
 @app.route('/logout')
@@ -638,6 +666,8 @@ def guess():
     # Get hints & config
     baby_info = BabyInfo.query.first()
     prenom_clues = Clue.query.filter_by(theme='Prénom').all()
+    taille_clues = Clue.query.filter_by(theme='Taille').all()
+    poids_clues = Clue.query.filter_by(theme='Poids').all()
     form_config = FormConfig.query.first()
     if not form_config:
         form_config = FormConfig()
@@ -651,6 +681,17 @@ def guess():
         final_sex = baby_info.sex if (form_config.lock_sex and baby_info and baby_info.sex) else form.sex.data
         
         if existing_guess:
+            changes = []
+            if existing_guess.dob != form.dob.data: changes.append(f"Date: {existing_guess.dob} -> {form.dob.data}")
+            if existing_guess.time_of_birth != form.time_of_birth.data: changes.append(f"Heure: {existing_guess.time_of_birth} -> {form.time_of_birth.data}")
+            if existing_guess.sex != final_sex: changes.append(f"Sexe: {existing_guess.sex} -> {final_sex}")
+            if existing_guess.first_name != form.first_name.data: changes.append(f"Prénom 1: {existing_guess.first_name} -> {form.first_name.data}")
+            if existing_guess.height != form.height.data: changes.append(f"Taille: {existing_guess.height} -> {form.height.data}")
+            if existing_guess.weight != form.weight.data: changes.append(f"Poids: {existing_guess.weight} -> {form.weight.data}")
+            
+            if changes:
+                log_event(f"A modifié son pronostic. Changements : {', '.join(changes)}", level='INFO', user_id=current_user.id)
+            
             # Update existing
             existing_guess.dob = form.dob.data
             existing_guess.time_of_birth = form.time_of_birth.data
@@ -695,6 +736,7 @@ def guess():
                 hair_color=form.hair_color.data
             )
             db.session.add(new_guess)
+            log_event(f"A créé son premier pronostic.", level='INFO', user_id=current_user.id)
             flash('Votre pronostic a été enregistré !', 'success')
         
         db.session.commit()
@@ -727,7 +769,7 @@ def guess():
         
     scoring_rules = ScoringRule.query.all()
         
-    return render_template('guess_form.html', form=form, existing=bool(existing_guess), baby_info=baby_info, prenom_clues=prenom_clues, config=form_config, scoring_rules=scoring_rules)
+    return render_template('guess_form.html', form=form, existing=bool(existing_guess), baby_info=baby_info, prenom_clues=prenom_clues, taille_clues=taille_clues, poids_clues=poids_clues, config=form_config, scoring_rules=scoring_rules)
 @app.route('/stats')
 @login_required
 def stats():

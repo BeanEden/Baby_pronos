@@ -35,6 +35,11 @@
                     
                     <!-- Delete User Form -->
                     {% if current_user.id != u.id %}
+                    <form action="{{ url_for('admin_toggle_admin', user_id=u.id) }}" method="POST">
+                        <button type="submit" class="btn btn-sm" style="background-color: {% if u.is_admin %}#fdcb6e{% else %}#00b894{% endif %}; color: white; padding: 4px 8px;" onclick="return confirm('Êtes-vous sûr de vouloir {% if u.is_admin %}retirer les droits admin de{% else %}promouvoir{% endif %} {{ u.username }} ?');">
+                            {% if u.is_admin %}↓ Rétrograder{% else %}↑ Promouvoir Admin{% endif %}
+                        </button>
+                    </form>
                     <form action="{{ url_for('admin_delete_user', user_id=u.id) }}" method="POST">
                         <button type="submit" class="btn btn-sm" style="background-color: #ff7675; color: white; padding: 4px 8px;" onclick="return confirm('ATTENTION : Supprimer ce compte supprimera également son pronostic. Êtes-vous sûr ?');">
                             🗑️ Supprimer

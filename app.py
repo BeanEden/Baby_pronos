@@ -1182,6 +1182,25 @@ def admin_users():
     users = User.query.all()
     return render_template('admin_users.html', users=users)
 
+@app.route('/admin/users/toggle_admin/<int:user_id>', methods=['POST'])
+@login_required
+def admin_toggle_admin(user_id):
+    """Permet à l'admin de promouvoir ou rétrograder un utilisateur."""
+    if not current_user.is_admin:
+        return redirect(url_for('index'))
+    user = User.query.get_or_404(user_id)
+    if user.id == current_user.id:
+        flash('Vous ne pouvez pas modifier votre propre statut admin !', 'danger')
+        return redirect(url_for('admin_users'))
+    
+    user.is_admin = not user.is_admin
+    db.session.commit()
+    
+    action = "promu Administrateur" if user.is_admin else "rétrogradé Utilisateur"
+    flash(f'L\'utilisateur {user.username} a été {action}.', 'success')
+    return redirect(url_for('admin_users'))
+
+
 @app.route('/admin/users/delete/<int:user_id>', methods=['POST'])
 @login_required
 def admin_delete_user(user_id):

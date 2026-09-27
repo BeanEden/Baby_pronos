@@ -399,17 +399,27 @@ def login():
             norm_input = normalize_string(username_val)
             all_users = User.query.all()
             
-            # Map normalized names back to their original formatting
-            suggestions_map = {normalize_string(u.username): u.username for u in all_users}
+            # 1. Try exact normalized match (ignores case and accents)
+            matched_user = next((u for u in all_users if normalize_string(u.username) == norm_input), None)
             
-            closest = difflib.get_close_matches(norm_input, suggestions_map.keys(), n=3, cutoff=0.6)
-            
-            if closest:
-                original_suggestions = [suggestions_map[match] for match in closest]
-                suggestions = " ou ".join([f'"{name}"' for name in original_suggestions])
-                flash(f'Identifiant introuvable. Vouliez-vous dire {suggestions} ?', 'danger')
+            if matched_user:
+                if check_password_hash(matched_user.password_hash, form.password.data):
+                    login_user(matched_user)
+                    flash('Connexion réussie (avec correction de casse/accents).', 'success')
+                    return redirect(url_for('index'))
+                else:
+                    flash(f'Nom trouvé ("{matched_user.username}") mais mot de passe incorrect.', 'danger')
             else:
-                flash('Échec de la connexion. Veuillez vérifier votre prénom et nom.', 'danger')
+                # 2. Try difflib suggestions
+                suggestions_map = {normalize_string(u.username): u.username for u in all_users}
+                closest = difflib.get_close_matches(norm_input, suggestions_map.keys(), n=3, cutoff=0.6)
+                
+                if closest:
+                    original_suggestions = [suggestions_map[match] for match in closest]
+                    suggestions = " ou ".join([f'"{name}"' for name in original_suggestions])
+                    flash(f'Identifiant introuvable. Vouliez-vous dire {suggestions} ?', 'danger')
+                else:
+                    flash('Échec de la connexion. Veuillez vérifier votre prénom et nom.', 'danger')
     return render_template('login.html', form=form)
 
 @app.route('/logout')

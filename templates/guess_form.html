@@ -24,7 +24,15 @@
 
 {% block content %}
 <div class="form-container">
-    <h2>{% if existing %}Modifier{% else %}Faire{% endif %} votre pronostic</h2>
+    <h2>
+        {% if admin_edit %}
+            Modifier le pronostic de {{ guess_user }}
+        {% elif existing %}
+            Modifier votre pronostic
+        {% else %}
+            Faire votre pronostic
+        {% endif %}
+    </h2>
     <p class="form-subtitle">Laissez-vous guider par votre intuition !<br>
     <span style="font-size: 0.9em; opacity: 0.8;">
     {% if config.guess_deadline %}

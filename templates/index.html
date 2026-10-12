@@ -189,6 +189,7 @@
                         <a href="{{ url_for('guess') }}" class="action-icon" title="Modifier mon pronostic">✏️</a>
                     {% endif %}
                     {% if current_user.is_authenticated and current_user.is_admin and not session.get('view_as_user') %}
+                        <a href="{{ url_for('admin_edit_guess', guess_id=guess.id) }}" class="action-icon" title="Modifier">✏️</a>
                         <a href="{{ url_for('toggle_hide_guess', guess_id=guess.id) }}" class="action-icon" title="{% if guess.is_hidden %}Afficher{% else %}Masquer{% endif %}" style="margin-left: 5px;">
                             {% if guess.is_hidden %}👁️‍🗨️{% else %}👁️{% endif %}
                         </a>

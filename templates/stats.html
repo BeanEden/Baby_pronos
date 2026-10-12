@@ -618,15 +618,37 @@
         chartNamesCloud.setOption(cloudOption, true);
 
         // --- TOP NAMES (BAR) ---
-        // Take top 10
-        let topNamesArray = namesArray.slice(0, 10).reverse(); // Reverse for horizontal bar chart (bottom to top)
+        // Take all names
+        let topNamesArray = namesArray.reverse(); // Reverse for horizontal bar chart (bottom to top)
         let topNamesNames = topNamesArray.map(item => item.name);
         
+        let startPercent = 0;
+        if (topNamesArray.length > 0) {
+            startPercent = Math.max(0, 100 - (10 / topNamesArray.length) * 100);
+        }
+
         let topOption = {
             tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-            grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+            grid: { left: '3%', right: '8%', bottom: '3%', containLabel: true },
             xAxis: { type: 'value', minInterval: 1 },
             yAxis: { type: 'category', data: topNamesNames },
+            dataZoom: [
+                {
+                    type: 'slider',
+                    yAxisIndex: 0,
+                    start: startPercent,
+                    end: 100,
+                    width: 20,
+                    right: 10
+                },
+                {
+                    type: 'inside',
+                    yAxisIndex: 0,
+                    zoomOnMouseWheel: false,
+                    moveOnMouseWheel: true,
+                    moveOnMouseMove: true
+                }
+            ],
             series: []
         };
         

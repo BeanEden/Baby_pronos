@@ -349,6 +349,84 @@ def delete_guess(guess_id):
     flash('Pronostic supprimé avec succès.', 'success')
     return redirect(request.referrer or url_for('public_table'))
 
+@app.route('/admin/guess/edit/<int:guess_id>', methods=['GET', 'POST'])
+@login_required
+def admin_edit_guess(guess_id):
+    """Permet à l'admin de modifier le pronostic d'un utilisateur."""
+    if not current_user.is_admin:
+        return redirect(url_for('index'))
+        
+    existing_guess = Guess.query.get_or_404(guess_id)
+    form = GuessForm()
+    
+    baby_info = BabyInfo.query.first()
+    prenom_clues = Clue.query.filter_by(theme='Prénom').all()
+    taille_clues = Clue.query.filter_by(theme='Taille').all()
+    poids_clues = Clue.query.filter_by(theme='Poids').all()
+    form_config = FormConfig.query.first() or FormConfig()
+    
+    if form.validate_on_submit():
+        final_sex = baby_info.sex if (form_config.lock_sex and baby_info and baby_info.sex) else form.sex.data
+        
+        changes = []
+        if existing_guess.dob != form.dob.data: changes.append(f"Date: {existing_guess.dob} -> {form.dob.data}")
+        if existing_guess.time_of_birth != form.time_of_birth.data: changes.append(f"Heure: {existing_guess.time_of_birth} -> {form.time_of_birth.data}")
+        if existing_guess.sex != final_sex: changes.append(f"Sexe: {existing_guess.sex} -> {final_sex}")
+        if existing_guess.first_name != form.first_name.data: changes.append(f"Prénom 1: {existing_guess.first_name} -> {form.first_name.data}")
+        
+        if changes:
+            log_event(f"Admin a modifié le pronostic de l'utilisateur {existing_guess.user_id}. Changements : {', '.join(changes)}", level='WARNING', user_id=current_user.id)
+            
+        existing_guess.dob = form.dob.data
+        existing_guess.time_of_birth = form.time_of_birth.data
+        existing_guess.sex = final_sex
+        existing_guess.first_name = form.first_name.data
+        existing_guess.first_name_2 = form.first_name_2.data
+        existing_guess.first_name_3 = form.first_name_3.data
+        existing_guess.first_name_4 = form.first_name_4.data
+        existing_guess.first_name_5 = form.first_name_5.data
+        existing_guess.first_name_6 = form.first_name_6.data
+        existing_guess.first_name_7 = form.first_name_7.data
+        existing_guess.first_name_8 = form.first_name_8.data
+        existing_guess.first_name_9 = form.first_name_9.data
+        existing_guess.first_name_10 = form.first_name_10.data
+        existing_guess.height = form.height.data
+        existing_guess.weight = form.weight.data
+        existing_guess.skin_color = form.skin_color.data
+        existing_guess.eye_color = form.eye_color.data
+        existing_guess.hair_color = form.hair_color.data
+        
+        db.session.commit()
+        flash('Le pronostic a été modifié par l\'administrateur.', 'success')
+        return redirect(url_for('public_table'))
+        
+    elif request.method == 'GET':
+        form.dob.data = existing_guess.dob
+        form.time_of_birth.data = existing_guess.time_of_birth
+        form.sex.data = existing_guess.sex
+        form.first_name.data = existing_guess.first_name
+        form.first_name_2.data = existing_guess.first_name_2
+        form.first_name_3.data = existing_guess.first_name_3
+        form.first_name_4.data = existing_guess.first_name_4
+        form.first_name_5.data = existing_guess.first_name_5
+        form.first_name_6.data = existing_guess.first_name_6
+        form.first_name_7.data = existing_guess.first_name_7
+        form.first_name_8.data = existing_guess.first_name_8
+        form.first_name_9.data = existing_guess.first_name_9
+        form.first_name_10.data = existing_guess.first_name_10
+        form.height.data = existing_guess.height
+        form.weight.data = existing_guess.weight
+        form.skin_color.data = existing_guess.skin_color
+        form.eye_color.data = existing_guess.eye_color
+        form.hair_color.data = existing_guess.hair_color
+        
+    if form_config.lock_sex and baby_info and baby_info.sex:
+        form.sex.data = baby_info.sex
+        
+    scoring_rules = ScoringRule.query.all()
+    
+    return render_template('guess_form.html', form=form, existing=True, baby_info=baby_info, prenom_clues=prenom_clues, taille_clues=taille_clues, poids_clues=poids_clues, config=form_config, scoring_rules=scoring_rules, admin_edit=True, guess_user=existing_guess.user.username)
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
